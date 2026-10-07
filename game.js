@@ -327,6 +327,7 @@ function trip(load) {
   G.shake = 1; G.flash = 1; G.winHold = 0;
   const apps = Object.values(G.nodes).filter((n) => n.t === "ap" && n.vp).sort((a, b) => b.onAt - a.onAt);
   apps.forEach((n, i) => { n.culprit = i === 0; });
+  G.tripSet = new Set(apps.map((n) => n.id)); // everything that was on together: shown so the overload explains itself
   const src = G.nodes[G.g.src];
   if (apps[0]) spawnSparks(px(apps[0]), py(apps[0]), 34, COL.red, G.u * 4);
   apps.forEach((n) => spawnSparks(px(n), py(n), 10, COL.amber, G.u * 2.4));
@@ -354,11 +355,12 @@ function hudHit(x, y) {
   if (Math.hypot(x - (W - 32), y - 34) < 26) return "restart";
   const n = LEVELS.length;
   for (let i = 0; i < n; i++) {
-    if (Math.hypot(x - dotX(i), y - (H - 26)) < 20) return i;
+    if (Math.hypot(x - dotX(i), y - (H - 26)) < Math.min(20, dotGap() / 2 + 2)) return i;
   }
   return null;
 }
-const dotX = (i) => W / 2 + (i - (LEVELS.length - 1) / 2) * 36;
+const dotGap = () => Math.min(36, (W - 40) / Math.max(1, LEVELS.length - 1)); // shrinks so every level dot stays on screen
+const dotX = (i) => W / 2 + (i - (LEVELS.length - 1) / 2) * dotGap();
 
 function onDown(ev) {
   ev.preventDefault();
@@ -599,11 +601,12 @@ function drawAppliance(n) {
   const u = G.u, x = px(n), y = py(n);
   const s = u * (0.46 + 0.07 * n.load), p = n.pw, sc = 1 + n.pop * 0.18;
   const tripGlow = G.mode === "tripped" && n.culprit;
+  const frozen = G.mode === "tripped" && G.tripSet && G.tripSet.has(n.id) && !n.culprit;
   ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
   // glow
   if (p > 0.02) { ctx.shadowColor = COL.amber; ctx.shadowBlur = 26 * p; }
   ctx.fillStyle = COL.body;
-  ctx.strokeStyle = tripGlow ? COL.red : (p > 0.3 ? COL.amber : (n.done ? COL.green : (n.req ? "#8d9bc2" : COL.bodyEdge)));
+  ctx.strokeStyle = tripGlow ? COL.red : (frozen || p > 0.3 ? COL.amber : (n.done ? COL.green : (n.req ? "#8d9bc2" : COL.bodyEdge)));
   ctx.lineWidth = n.req && p < 0.3 ? 3 : 3;
   rr(-s / 2, -s / 2, s, s, s * 0.2); ctx.fill();
   if (n.done) { ctx.fillStyle = "rgba(70,224,138,0.13)"; ctx.fill(); }
@@ -629,9 +632,12 @@ function drawAppliance(n) {
   const bx = s / 2 - 2, by = -s / 2 + 2, br = Math.max(8, u * 0.13);
   if (n.req) {
     const done = n.task ? n.done : p > 0.3;
+    const bs = done ? 1 : 1 + 0.12 * Math.sin(G.t * 4.5); // the "!" breathes until the appliance is satisfied
+    ctx.save(); ctx.translate(bx, by); ctx.scale(bs, bs); ctx.translate(-bx, -by);
     ctx.fillStyle = done ? COL.green : "#fff"; ctx.beginPath(); ctx.arc(bx, by, br, 0, 7); ctx.fill();
     ctx.fillStyle = "#0a0e19"; ctx.font = `800 ${br * 1.3}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(done ? "✓" : "!", bx, by + 1);
+    ctx.restore();
   } else if (n.bonus) {
     ctx.fillStyle = p > 0.3 ? COL.gold : "#0e1424"; ctx.strokeStyle = COL.gold; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(bx, by, br, 0, 7); ctx.fill(); ctx.stroke();
@@ -651,7 +657,7 @@ function drawAppliance(n) {
   const pw = u * 0.12, pg = u * 0.04, total = n.load * pw + (n.load - 1) * pg;
   for (let i = 0; i < n.load; i++) {
     const cx = x - total / 2 + i * (pw + pg), cy = y + s / 2 + 7;
-    ctx.fillStyle = p > 0.3 ? COL.amber : "#2a3454"; rr(cx, cy, pw, u * 0.1, 2); ctx.fill();
+    ctx.fillStyle = p > 0.3 || (G.mode === "tripped" && G.tripSet && G.tripSet.has(n.id)) ? COL.amber : "#2a3454"; rr(cx, cy, pw, u * 0.1, 2); ctx.fill();
   }
   ctx.fillStyle = COL.dim; ctx.font = `600 ${Math.max(9, u * 0.15)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
   ctx.fillText(n.k.toUpperCase(), x, y + s / 2 + 7 + u * 0.1 + 4);
@@ -688,9 +694,34 @@ function drawPanel() {
     const flick = 0.75 + 0.25 * Math.sin(G.t * 22) * Math.max(0, 1 - G.modeT);
     ctx.fillStyle = `rgba(255,77,77,${flick})`; ctx.font = "800 30px system-ui, sans-serif";
     ctx.shadowColor = COL.red; ctx.shadowBlur = 18; ctx.fillText("OVERLOAD", W / 2, cy - 6); ctx.shadowBlur = 0;
+    if (G.modeT > 0.15) { // why it happened: everything outlined in amber was on at once
+      ctx.globalAlpha = Math.min(1, (G.modeT - 0.15) * 4); ctx.fillStyle = COL.dim; ctx.font = "500 13px system-ui, sans-serif";
+      ctx.fillText("Too much on at once — more than the battery holds", W / 2, cy + 20); ctx.globalAlpha = 1;
+    }
     if (G.modeT > TRIP_LOCK) {
-      ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = COL.text; ctx.font = "600 15px system-ui, sans-serif";
-      ctx.fillText("tap to reset the breaker", W / 2, cy + 26); ctx.globalAlpha = 1;
+      ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = COL.text; ctx.font = "600 14px system-ui, sans-serif";
+      ctx.fillText("tap to reset the breaker", W / 2, cy + 42); ctx.globalAlpha = 1;
+    }
+  } else if (G.mode === "play") { // the goal, always visible, with progress
+    const reqs = Object.values(G.nodes).filter((n) => n.t === "ap" && n.req);
+    if (reqs.length) {
+      const hasTask = reqs.some((n) => n.task), okN = reqs.filter((n) => (n.task ? n.done : n.vp)).length;
+      ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      const a = "Power every", b = hasTask ? "— rings fill, then stay done" : "appliance";
+      const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, r = 9, gap = 7, total = wa + gap + 2 * r + gap + wb;
+      let x = W / 2 - total / 2; const y = cy - 2;
+      ctx.fillStyle = COL.text; ctx.fillText(a, x, y); x += wa + gap;
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x + r, y, r, 0, 7); ctx.fill();
+      ctx.fillStyle = "#0a0e19"; ctx.font = "800 12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("!", x + r, y + 1);
+      ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = COL.text; ctx.fillText(b, x + 2 * r + gap, y);
+      // progress: one dot per required appliance
+      const dr = 6, ds = 20, x0 = W / 2 - ((reqs.length - 1) * ds) / 2;
+      reqs.forEach((n, i) => {
+        const ok = n.task ? n.done : n.vp;
+        ctx.beginPath(); ctx.arc(x0 + i * ds, cy + 22, dr, 0, 7);
+        if (ok) { ctx.fillStyle = COL.green; ctx.fill(); } else { ctx.strokeStyle = "#55628a"; ctx.lineWidth = 2; ctx.stroke(); }
+      });
+      void okN;
     }
   } else if (G.mode === "won") {
     const k = Math.min(1, G.modeT * 5), e = 1 - Math.pow(1 - k, 3);
