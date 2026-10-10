@@ -104,19 +104,32 @@ function resize() {
 }
 
 // Candidates (not part of the catalogue) can be played via #c9a style links; see www/candidates.js
-const curLevel = () => G.cand || LEVELS[G.levelIndex];
+const curLevel = () => (G.tut ? TUTORIAL_LEVEL : G.cand || LEVELS[G.levelIndex]); // tutorial: Level 0 lives in tutorial.js, not LEVELS
+
+// tutorial: Level 0 (see tutorial.js). Not part of the catalogue.
+function loadTutorial() {
+  G.tut = Tutorial.begin(); G.cand = null;
+  try { history.replaceState(null, "", "#0"); } catch (e) { /* ignore */ }
+  startLevel(TUTORIAL_LEVEL);
+}
+function endTutorial() { Tutorial.markDone(); G.tut = null; loadLevel(0); }
+// restart the board; the tutorial returns to the current step's checkpoint instead of the very start
+function restartBoard() {
+  resetBoard(false); G.taps = 0; G.trips = 0; G.runTime = 0; G.started = false;
+  if (G.tut) Tutorial.onRestart(G);
+}
 
 function loadCandidate(key) {
   const c = typeof CANDIDATES !== "undefined" && CANDIDATES[key];
   if (!c) return loadLevel(0);
-  G.cand = c; G.candKey = key;
+  G.cand = c; G.candKey = key; G.tut = null;
   try { history.replaceState(null, "", "#c" + key); } catch (e) { /* ignore */ }
   startLevel(c);
 }
 
 function loadLevel(i, plain) { // plain: true = abstract board, false = house (default); omitted = keep current
   i = Math.max(0, Math.min(LEVELS.length - 1, i));
-  G.levelIndex = i; G.cand = null;
+  G.levelIndex = i; G.cand = null; G.tut = null;
   if (plain !== undefined) G.plain = !!plain; // house experiment (see house.js)
   try { history.replaceState(null, "", "#" + (i + 1) + (G.plain ? "p" : "")); } catch (e) { /* ignore */ }
   startLevel(LEVELS[i]);
@@ -131,6 +144,7 @@ function startLevel(lv) {
 }
 
 function resetBoard(hard) {
+  G.beat = null;
   G.state = L.initialState(G.g);
   G.mode = "play"; G.modeT = 0; G.winHold = 0; G.bonus = false;
   if (hard) { G.dark = 0; G.parts.length = 0; G.rings.length = 0; }
@@ -314,6 +328,8 @@ function step(dt) {
 
   G.parts = G.parts.filter((p) => { p.life += dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; return p.life < p.max; });
   G.rings = G.rings.filter((r) => { r.life += dt; return r.life < r.dur; });
+  if (G.tut) Tutorial.update(G); // tutorial: watch the board and advance the steps
+  if (G.mode === "won" && G.beat && !G.beat.shown && G.modeT > 1.25) { G.beat.shown = true; Neighborhood.showBeat(G.beat); } // progression: neighborhood beat
 }
 
 function leverTarget(n) {
@@ -338,6 +354,8 @@ function trip(load) {
 }
 
 function win(lit) {
+  const prog = !G.cand && !G.tut && typeof Progress !== "undefined" ? Progress.record(G.levelIndex) : null; // progression: count this level toward its milestone
+  G.beat = prog ? Object.assign({ shown: false }, prog) : null;                      // every level (replays too) ends on the neighborhood map; off-plan levels fall back to next-level
   G.mode = "won"; G.modeT = 0;
   G.bonus = L.bonusDone(G.g, lit);
   G.shake = 0.15;
@@ -353,6 +371,8 @@ function win(lit) {
 // ----------------------------------------------------------------- input ----
 function hudHit(x, y) {
   if (Math.hypot(x - (W - 32), y - 34) < 26) return "restart";
+  if (!G.tut && Math.hypot(x - (W - 82), y - 34) < 24) return "map"; // progression: neighborhood button
+  if (G.tut) return G.tut.step < 5 && Math.abs(x - W / 2) < 90 && Math.abs(y - (H - 26)) < 24 ? "skip" : null; // tutorial: only Skip, no level dots
   const n = LEVELS.length;
   for (let i = 0; i < n; i++) {
     if (Math.hypot(x - dotX(i), y - (H - 26)) < Math.min(20, dotGap() / 2 + 2)) return i;
@@ -367,15 +387,23 @@ function onDown(ev) {
   Sfx.init();
   const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
   const hit = hudHit(x, y);
-  if (hit === "restart") { resetBoard(false); G.taps = 0; G.trips = 0; G.runTime = 0; G.started = false; Sfx.reset(); return; }
+  if (hit === "skip") { endTutorial(); return; }
+  if (hit === "map") { Neighborhood.showMap({ closable: true }); return; }
+  if (hit === "restart") { restartBoard(); Sfx.reset(); return; }
   if (typeof hit === "number") { loadLevel(hit); return; }
 
   if (G.mode === "tripped") {
-    if (G.modeT > TRIP_LOCK) { resetBoard(false); Sfx.reset(); buzz(15); }
+    if (G.modeT > TRIP_LOCK) { resetBoard(false); if (G.tut) Tutorial.onReset(G); Sfx.reset(); buzz(15); }
     return;
   }
   if (G.mode === "won") {
-    if (G.modeT > 0.5) { if (G.cand) loadCandidate(G.candKey); else loadLevel((G.levelIndex + 1) % LEVELS.length); }
+    if (G.modeT > 0.5) {
+      if (G.tut) endTutorial();
+      else if (G.cand) loadCandidate(G.candKey);
+      else if (G.beat && !G.beat.shown) { G.beat.shown = true; Neighborhood.showBeat(G.beat); } // progression: do not wait for the delay
+      else if (G.beat) { /* the neighborhood overlay is already up */ }
+      else loadLevel((G.levelIndex + 1) % LEVELS.length);
+    }
     return;
   }
 
@@ -385,6 +413,7 @@ function onDown(ev) {
     if (d < bd) { bd = d; best = n; }
   });
   if (!best) return;
+  if (G.tut && !Tutorial.allows(G, best.id)) { Tutorial.rejected(G); return; } // tutorial: locked controls
   G.started = true; G.taps++;
   const before = G.state[best.id];
   G.state = L.nextState(G.g, G.state, best.id);
@@ -399,7 +428,7 @@ cv.addEventListener("pointerdown", onDown);
 window.addEventListener("resize", resize);
 window.addEventListener("keydown", (ev) => {
   if (/^[0-9]$/.test(ev.key)) { const n = ev.key === "0" ? 10 : +ev.key; if (n <= LEVELS.length) loadLevel(n - 1); } // 1-9, 0 = level 10
-  if (ev.key === "r" || ev.key === "R") { resetBoard(false); G.taps = 0; G.trips = 0; G.runTime = 0; G.started = false; }
+  if (ev.key === "r" || ev.key === "R") restartBoard();
   if (ev.key === " ") onDown({ preventDefault() {}, clientX: -1, clientY: -1 });
 });
 
@@ -666,7 +695,7 @@ function drawAppliance(n) {
 function drawHud() {
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
   ctx.fillStyle = COL.dim; ctx.font = "700 11px system-ui, sans-serif";
-  ctx.fillText(G.cand ? "P O W E R   ·   CANDIDATE " + G.candKey.toUpperCase() + "  (not in catalogue)" : "P O W E R   ·   LEVEL " + (G.levelIndex + 1) + " / " + LEVELS.length, 18, 22);
+  ctx.fillText(G.tut ? "P O W E R   ·   TUTORIAL" : G.cand ? "P O W E R   ·   CANDIDATE " + G.candKey.toUpperCase() + "  (not in catalogue)" : "P O W E R   ·   LEVEL " + (G.levelIndex + 1) + " / " + LEVELS.length, 18, 22);
   ctx.fillStyle = COL.text; ctx.font = "700 22px system-ui, sans-serif";
   ctx.fillText(curLevel().name, 18, 46);
   ctx.fillStyle = COL.dim; ctx.font = "500 13px system-ui, sans-serif";
@@ -677,6 +706,15 @@ function drawHud() {
   ctx.strokeStyle = COL.text; ctx.lineWidth = 2.5; ctx.lineCap = "round";
   ctx.beginPath(); ctx.arc(W - 32, 34, 8, -0.4, Math.PI * 1.55); ctx.stroke();
   ctx.fillStyle = COL.text; ctx.beginPath(); ctx.moveTo(W - 32 + 11, 34 - 6); ctx.lineTo(W - 32 + 3, 34 - 9); ctx.lineTo(W - 32 + 11, 34 - 13); ctx.fill();
+  if (!G.tut) { // progression: house button opens the neighborhood
+    ctx.strokeStyle = COL.bodyEdge; ctx.lineWidth = 2; ctx.fillStyle = COL.panel; ctx.beginPath(); ctx.arc(W - 82, 34, 20, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = COL.text; ctx.lineWidth = 2.2; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(W - 91, 35); ctx.lineTo(W - 82, 27); ctx.lineTo(W - 73, 35); ctx.moveTo(W - 88, 33); ctx.lineTo(W - 88, 43); ctx.lineTo(W - 76, 43); ctx.lineTo(W - 76, 33); ctx.stroke();
+    ctx.fillStyle = COL.amber; ctx.fillRect(W - 84, 36, 4, 4);
+  }
+  if (G.tut) { // tutorial: a single Skip control instead of the level dots and stats
+    if (G.tut.step < 5) { ctx.fillStyle = COL.dim; ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("Skip tutorial ›", W / 2, H - 26); }
+    return;
+  }
   // level dots
   for (let i = 0; i < LEVELS.length; i++) {
     const cur = !G.cand && i === G.levelIndex;
@@ -696,13 +734,13 @@ function drawPanel() {
     ctx.shadowColor = COL.red; ctx.shadowBlur = 18; ctx.fillText("OVERLOAD", W / 2, cy - 6); ctx.shadowBlur = 0;
     if (G.modeT > 0.15) { // why it happened: everything outlined in amber was on at once
       ctx.globalAlpha = Math.min(1, (G.modeT - 0.15) * 4); ctx.fillStyle = COL.dim; ctx.font = "500 13px system-ui, sans-serif";
-      ctx.fillText("Too much on at once — more than the battery holds", W / 2, cy + 20); ctx.globalAlpha = 1;
+      ctx.fillText(G.tut && G.tut.caption ? G.tut.caption : "Too much on at once — more than the battery holds", W / 2, cy + 20); ctx.globalAlpha = 1;
     }
     if (G.modeT > TRIP_LOCK) {
       ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = COL.text; ctx.font = "600 14px system-ui, sans-serif";
       ctx.fillText("tap to reset the breaker", W / 2, cy + 42); ctx.globalAlpha = 1;
     }
-  } else if (G.mode === "play") { // the goal, always visible, with progress
+  } else if (G.mode === "play" && !G.tut) { // the goal, always visible, with progress
     const reqs = Object.values(G.nodes).filter((n) => n.t === "ap" && n.req);
     if (reqs.length) {
       const hasTask = reqs.some((n) => n.task), okN = reqs.filter((n) => (n.task ? n.done : n.vp)).length;
@@ -723,6 +761,10 @@ function drawPanel() {
       });
       void okN;
     }
+  } else if (G.mode === "won" && G.tut) {
+    Tutorial.drawWon(ctx, G, cy);
+  } else if (G.mode === "play" && G.tut) {
+    Tutorial.drawPanelText(ctx, G, cy);
   } else if (G.mode === "won") {
     const k = Math.min(1, G.modeT * 5), e = 1 - Math.pow(1 - k, 3);
     ctx.save(); ctx.translate(0, (1 - e) * 24); ctx.globalAlpha = e;
@@ -765,6 +807,7 @@ function draw() {
   // blackout after a trip: the board goes dark, HUD stays readable
   if (G.dark > 0.01) { ctx.fillStyle = `rgba(2,3,8,${0.55 * G.dark})`; ctx.fillRect(0, HUD_TOP - 10, W, H - HUD_TOP - 60); }
   if (G.flash > 0) { ctx.fillStyle = `rgba(255,${G.mode === "tripped" ? "90,90" : "255,255"},${0.5 * G.flash})`; ctx.fillRect(0, 0, W, H); }
+  if (G.tut) Tutorial.drawOverlay(ctx, G, { px, py }); // tutorial: spotlight + pip/battery pulses
   drawHud();
   drawPanel();
 }
@@ -777,8 +820,28 @@ function frame(now) {
 }
 
 resize();
+Neighborhood.init({
+  play: (i) => loadLevel(i),
+  sfx: (kind) => { // placeholder chimes
+    if (kind === "level") { Sfx.tone(784, 0.2, "triangle", 0.16); Sfx.tone(988, 0.34, "triangle", 0.16, null, 0.13); }
+    else [523, 659, 784, 1046, 1318].forEach((f, k) => Sfx.tone(f, 0.5, "triangle", 0.18, null, 0.2 + k * 0.2));
+  },
+});
 function loadFromHash() {
-  const h = (location.hash || "#1").slice(1);
+  const raw = (location.hash || "").slice(1);
+  // tutorial: #0 always replays it; a bare address starts it once on first launch; a level link skips it
+  if (typeof Tutorial !== "undefined" && (raw === "0" || (raw === "" && !Tutorial.isDone()))) return loadTutorial();
+  if (raw === "reset") { // progression: #reset clears saved progress and the tutorial flag (testing)
+    Progress.reset(); try { localStorage.removeItem("power.tutorial.done"); } catch (e) { /* ignore */ }
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ignore */ }
+    return loadFromHash();
+  }
+  if (raw === "" && Progress.hasAny()) { // returning player: resume at the next unfinished level, with the neighborhood up
+    const n = Progress.nextLevel(-1); loadLevel(n === null ? 0 : n);
+    Neighborhood.showMap({ closable: true });
+    return;
+  }
+  const h = raw || "1";
   if (/^c[0-9]+[a-z]$/.test(h)) loadCandidate(h.slice(1));
   else loadLevel((parseInt(h, 10) || 1) - 1, /p$/.test(h)); // house experiment: #3p = plain board, #3 / #3h = house
 }
