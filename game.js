@@ -103,12 +103,15 @@ function resize() {
   if (G.g) layout();
 }
 
+// journey: where a level sits on the map. #N links and the HUD use the journey position (sector s, slot k).
+const levelLabel = (i) => { const p = Progress.poleFor(i); return p ? "SECTOR " + (p.sector + 1) + "   ·   LEVEL " + p.slot : "LEVEL " + (i + 1); };
+const hashFor = (i) => { const p = Progress.poleFor(i); return p ? p.pos : i + 1; };
 // Candidates (not part of the catalogue) can be played via #c9a style links; see www/candidates.js
 const curLevel = () => (G.tut ? TUTORIAL_LEVEL : G.cand || LEVELS[G.levelIndex]); // tutorial: Level 0 lives in tutorial.js, not LEVELS
 
 // tutorial: Level 0 (see tutorial.js). Not part of the catalogue.
 function loadTutorial() {
-  G.tut = Tutorial.begin(); G.cand = null;
+  G.tut = Tutorial.begin(); G.cand = null; G.disc = null;
   try { history.replaceState(null, "", "#0"); } catch (e) { /* ignore */ }
   startLevel(TUTORIAL_LEVEL);
 }
@@ -117,12 +120,13 @@ function endTutorial() { Tutorial.markDone(); G.tut = null; loadLevel(0); }
 function restartBoard() {
   resetBoard(false); G.taps = 0; G.trips = 0; G.runTime = 0; G.started = false;
   if (G.tut) Tutorial.onRestart(G);
+  if (G.disc) Discovery.end(G); // discovery: a restart ends the tip, the level is then normal
 }
 
 function loadCandidate(key) {
   const c = typeof CANDIDATES !== "undefined" && CANDIDATES[key];
   if (!c) return loadLevel(0);
-  G.cand = c; G.candKey = key; G.tut = null;
+  G.cand = c; G.candKey = key; G.tut = null; G.disc = null;
   try { history.replaceState(null, "", "#c" + key); } catch (e) { /* ignore */ }
   startLevel(c);
 }
@@ -130,8 +134,9 @@ function loadCandidate(key) {
 function loadLevel(i, plain) { // plain: true = abstract board, false = house (default); omitted = keep current
   i = Math.max(0, Math.min(LEVELS.length - 1, i));
   G.levelIndex = i; G.cand = null; G.tut = null;
+  G.disc = typeof Discovery !== "undefined" ? Discovery.begin(i) : null; // discovery: first-encounter tip for routing / charge / pass-through
   if (plain !== undefined) G.plain = !!plain; // house experiment (see house.js)
-  try { history.replaceState(null, "", "#" + (i + 1) + (G.plain ? "p" : "")); } catch (e) { /* ignore */ }
+  try { history.replaceState(null, "", "#" + hashFor(i) + (G.plain ? "p" : "")); } catch (e) { /* ignore */ }
   startLevel(LEVELS[i]);
 }
 
@@ -329,7 +334,8 @@ function step(dt) {
   G.parts = G.parts.filter((p) => { p.life += dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; return p.life < p.max; });
   G.rings = G.rings.filter((r) => { r.life += dt; return r.life < r.dur; });
   if (G.tut) Tutorial.update(G); // tutorial: watch the board and advance the steps
-  if (G.mode === "won" && G.beat && !G.beat.shown && G.modeT > 1.25) { G.beat.shown = true; Neighborhood.showBeat(G.beat); } // progression: neighborhood beat
+  if (G.disc) Discovery.update(G); // discovery: advance the tip, end it when the level is won
+  if (G.mode === "won" && G.beat && !G.beat.shown && G.modeT > 1.25) { G.beat.shown = true; JourneyMap.showBeat(G.beat); } // progression: journey map beat
 }
 
 function leverTarget(n) {
@@ -372,36 +378,30 @@ function win(lit) {
 function hudHit(x, y) {
   if (Math.hypot(x - (W - 32), y - 34) < 26) return "restart";
   if (!G.tut && Math.hypot(x - (W - 82), y - 34) < 24) return "map"; // progression: neighborhood button
+  if (G.disc) return Math.abs(x - W / 2) < 90 && Math.abs(y - (H - 26)) < 24 ? "skip" : null; // discovery: only Skip, no level dots
   if (G.tut) return G.tut.step < 5 && Math.abs(x - W / 2) < 90 && Math.abs(y - (H - 26)) < 24 ? "skip" : null; // tutorial: only Skip, no level dots
-  const n = LEVELS.length;
-  for (let i = 0; i < n; i++) {
-    if (Math.hypot(x - dotX(i), y - (H - 26)) < Math.min(20, dotGap() / 2 + 2)) return i;
-  }
-  return null;
+  return null; // journey: the map replaces the old row of level dots
 }
-const dotGap = () => Math.min(36, (W - 40) / Math.max(1, LEVELS.length - 1)); // shrinks so every level dot stays on screen
-const dotX = (i) => W / 2 + (i - (LEVELS.length - 1) / 2) * dotGap();
 
 function onDown(ev) {
   ev.preventDefault();
   Sfx.init();
   const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
   const hit = hudHit(x, y);
-  if (hit === "skip") { endTutorial(); return; }
-  if (hit === "map") { Neighborhood.showMap({ closable: true }); return; }
+  if (hit === "skip") { if (G.tut) endTutorial(); else { restartBoard(); Sfx.reset(); } return; } // discovery: Skip = restart, which ends the tip
+  if (hit === "map") { JourneyMap.showMap({ closable: true }); return; }
   if (hit === "restart") { restartBoard(); Sfx.reset(); return; }
-  if (typeof hit === "number") { loadLevel(hit); return; }
 
   if (G.mode === "tripped") {
-    if (G.modeT > TRIP_LOCK) { resetBoard(false); if (G.tut) Tutorial.onReset(G); Sfx.reset(); buzz(15); }
+    if (G.modeT > TRIP_LOCK) { resetBoard(false); if (G.tut) Tutorial.onReset(G); if (G.disc) Discovery.end(G); Sfx.reset(); buzz(15); }
     return;
   }
   if (G.mode === "won") {
     if (G.modeT > 0.5) {
       if (G.tut) endTutorial();
       else if (G.cand) loadCandidate(G.candKey);
-      else if (G.beat && !G.beat.shown) { G.beat.shown = true; Neighborhood.showBeat(G.beat); } // progression: do not wait for the delay
-      else if (G.beat) { /* the neighborhood overlay is already up */ }
+      else if (G.beat && !G.beat.shown) { G.beat.shown = true; JourneyMap.showBeat(G.beat); } // progression: do not wait for the delay
+      else if (G.beat) { /* the journey map is already up */ }
       else loadLevel((G.levelIndex + 1) % LEVELS.length);
     }
     return;
@@ -414,6 +414,7 @@ function onDown(ev) {
   });
   if (!best) return;
   if (G.tut && !Tutorial.allows(G, best.id)) { Tutorial.rejected(G); return; } // tutorial: locked controls
+  if (G.disc && !Discovery.allows(G, best.id)) { Discovery.rejected(G); return; } // discovery: locked controls
   G.started = true; G.taps++;
   const before = G.state[best.id];
   G.state = L.nextState(G.g, G.state, best.id);
@@ -427,7 +428,7 @@ function onDown(ev) {
 cv.addEventListener("pointerdown", onDown);
 window.addEventListener("resize", resize);
 window.addEventListener("keydown", (ev) => {
-  if (/^[0-9]$/.test(ev.key)) { const n = ev.key === "0" ? 10 : +ev.key; if (n <= LEVELS.length) loadLevel(n - 1); } // 1-9, 0 = level 10
+  if (/^[0-9]$/.test(ev.key)) { const n = ev.key === "0" ? 10 : +ev.key, i = Progress.indexAtPos(n); if (i !== null) loadLevel(i); } // 1-9, 0 = level 10 of sector 1
   if (ev.key === "r" || ev.key === "R") restartBoard();
   if (ev.key === " ") onDown({ preventDefault() {}, clientX: -1, clientY: -1 });
 });
@@ -695,7 +696,7 @@ function drawAppliance(n) {
 function drawHud() {
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
   ctx.fillStyle = COL.dim; ctx.font = "700 11px system-ui, sans-serif";
-  ctx.fillText(G.tut ? "P O W E R   ·   TUTORIAL" : G.cand ? "P O W E R   ·   CANDIDATE " + G.candKey.toUpperCase() + "  (not in catalogue)" : "P O W E R   ·   LEVEL " + (G.levelIndex + 1) + " / " + LEVELS.length, 18, 22);
+  ctx.fillText(G.tut ? "P O W E R   ·   TUTORIAL" : G.cand ? "P O W E R   ·   CANDIDATE " + G.candKey.toUpperCase() + "  (not in catalogue)" : "P O W E R   ·   " + levelLabel(G.levelIndex), 18, 22);
   ctx.fillStyle = COL.text; ctx.font = "700 22px system-ui, sans-serif";
   ctx.fillText(curLevel().name, 18, 46);
   ctx.fillStyle = COL.dim; ctx.font = "500 13px system-ui, sans-serif";
@@ -711,18 +712,14 @@ function drawHud() {
     ctx.strokeStyle = COL.text; ctx.lineWidth = 2.2; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(W - 91, 35); ctx.lineTo(W - 82, 27); ctx.lineTo(W - 73, 35); ctx.moveTo(W - 88, 33); ctx.lineTo(W - 88, 43); ctx.lineTo(W - 76, 43); ctx.lineTo(W - 76, 33); ctx.stroke();
     ctx.fillStyle = COL.amber; ctx.fillRect(W - 84, 36, 4, 4);
   }
+  if (G.disc) { ctx.fillStyle = COL.dim; ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("Skip tip ›", W / 2, H - 26); return; } // discovery
   if (G.tut) { // tutorial: a single Skip control instead of the level dots and stats
     if (G.tut.step < 5) { ctx.fillStyle = COL.dim; ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("Skip tutorial ›", W / 2, H - 26); }
     return;
   }
-  // level dots
-  for (let i = 0; i < LEVELS.length; i++) {
-    const cur = !G.cand && i === G.levelIndex;
-    ctx.fillStyle = cur ? COL.amber : "#2a3454"; ctx.beginPath(); ctx.arc(dotX(i), H - 26, cur ? 7 : 5, 0, 7); ctx.fill();
-  }
   ctx.fillStyle = "#4b5675"; ctx.font = "500 11px system-ui, sans-serif"; ctx.textAlign = "center";
   const mins = G.runTime.toFixed(1);
-  ctx.fillText(`taps ${G.taps}  ·  trips ${G.trips}  ·  ${mins}s`, W / 2, H - 6);
+  ctx.fillText(`taps ${G.taps}  ·  trips ${G.trips}  ·  ${mins}s`, W / 2, H - 14);
 }
 
 function drawPanel() {
@@ -740,6 +737,8 @@ function drawPanel() {
       ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = COL.text; ctx.font = "600 14px system-ui, sans-serif";
       ctx.fillText("tap to reset the breaker", W / 2, cy + 42); ctx.globalAlpha = 1;
     }
+  } else if (G.mode === "play" && G.disc) {
+    Discovery.drawPanelText(ctx, G, cy); // discovery: prompt / caption in place of the goal line
   } else if (G.mode === "play" && !G.tut) { // the goal, always visible, with progress
     const reqs = Object.values(G.nodes).filter((n) => n.t === "ap" && n.req);
     if (reqs.length) {
@@ -808,6 +807,7 @@ function draw() {
   if (G.dark > 0.01) { ctx.fillStyle = `rgba(2,3,8,${0.55 * G.dark})`; ctx.fillRect(0, HUD_TOP - 10, W, H - HUD_TOP - 60); }
   if (G.flash > 0) { ctx.fillStyle = `rgba(255,${G.mode === "tripped" ? "90,90" : "255,255"},${0.5 * G.flash})`; ctx.fillRect(0, 0, W, H); }
   if (G.tut) Tutorial.drawOverlay(ctx, G, { px, py }); // tutorial: spotlight + pip/battery pulses
+  if (G.disc) Discovery.drawOverlay(ctx, G, { px, py }); // discovery: spotlight + tap ring
   drawHud();
   drawPanel();
 }
@@ -820,7 +820,7 @@ function frame(now) {
 }
 
 resize();
-Neighborhood.init({
+JourneyMap.init({
   play: (i) => loadLevel(i),
   sfx: (kind) => { // placeholder chimes
     if (kind === "level") { Sfx.tone(784, 0.2, "triangle", 0.16); Sfx.tone(988, 0.34, "triangle", 0.16, null, 0.13); }
@@ -831,19 +831,27 @@ function loadFromHash() {
   const raw = (location.hash || "").slice(1);
   // tutorial: #0 always replays it; a bare address starts it once on first launch; a level link skips it
   if (typeof Tutorial !== "undefined" && (raw === "0" || (raw === "" && !Tutorial.isDone()))) return loadTutorial();
+  const fin = /^finale([0-9]+)$/.exec(raw); // debug: replay a sector finale on the map without changing saves
+  if (fin) { loadLevel(Progress.nextIndex() === null ? 0 : Progress.nextIndex()); JourneyMap.previewFinale(+fin[1] - 1); return; }
+  if (raw === "tips") { // discovery: test mode, every tip level shows its tip (until reload)
+    Discovery.enableTesting(); try { history.replaceState(null, "", "#5"); } catch (e) { /* ignore */ }
+    return loadFromHash();
+  }
   if (raw === "reset") { // progression: #reset clears saved progress and the tutorial flag (testing)
-    Progress.reset(); try { localStorage.removeItem("power.tutorial.done"); } catch (e) { /* ignore */ }
+    Progress.reset(); Discovery.reset(); try { localStorage.removeItem("power.tutorial.done"); } catch (e) { /* ignore */ }
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ignore */ }
     return loadFromHash();
   }
   if (raw === "" && Progress.hasAny()) { // returning player: resume at the next unfinished level, with the neighborhood up
-    const n = Progress.nextLevel(-1); loadLevel(n === null ? 0 : n);
-    Neighborhood.showMap({ closable: true });
+    const n = Progress.nextIndex(); loadLevel(n === null ? 0 : n);
+    JourneyMap.showMap({ closable: true });
     return;
   }
   const h = raw || "1";
   if (/^c[0-9]+[a-z]$/.test(h)) loadCandidate(h.slice(1));
-  else loadLevel((parseInt(h, 10) || 1) - 1, /p$/.test(h)); // house experiment: #3p = plain board, #3 / #3h = house
+  else if (/^legacy[0-9]+p?$/.test(h)) loadLevel((parseInt(h.slice(6), 10) || 1) - 1, /p$/.test(h)); // the old catalogue number
+  else if (Progress.idToIndex(h.replace(/p$/, "")) !== null) loadLevel(Progress.idToIndex(h.replace(/p$/, "")), /p$/.test(h)); // #overload
+  else { const pos = parseInt(h, 10) || 1, i = Progress.indexAtPos(pos); loadLevel(i === null ? 0 : i, /p$/.test(h)); } // journey position; #3p = plain board
 }
 window.addEventListener("hashchange", loadFromHash);
 loadFromHash();

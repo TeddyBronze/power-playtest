@@ -41,17 +41,17 @@ const TUTORIAL_LEVEL = {
 const Tutorial = (function () {
   const KEY = "power.tutorial.done";
   const PROMPT = {
-    1: "Appliances marked ! need power. Switch on the lamp.",
+    1: "Appliances marked with ! need power. Switch on the lamp.",
     2: "Let's see how much power the TV uses. Switch it on.",
     3: "The battery is full. What happens if we switch on the radio?",
     4: "Make room for the radio without losing the lamp.",
-    5: "You did it! Power every ! without overloading the battery.",
+    5: "You did it! Power every ! appliance without overloading.",
   };
   const CAPTION = {
-    1: "1 bar = 1 battery cell.",
-    2: "The battery is full: 3 bars, 3 cells.",
-    3: "1 bar too many — the battery holds only 3.",
-    5: "Switching off what you didn't need made room.",
+    1: "One bar uses one battery cell.",
+    2: "The battery is full: all 3 cells are in use.",
+    3: "One bar too many: the battery holds only 3.",
+    5: "Switching off the TV made room for the radio.",
   };
   const TARGET = { 1: { sw: "sl", ap: "lamp" }, 2: { sw: "st", ap: "tv" }, 3: { sw: "sr", ap: "radio" } };
   const CAPTION_SECONDS = 2.6;

@@ -1,9 +1,11 @@
+// Handcrafted levels. Each has a stable `id` (saves and links use it); the order of this array is the
+// catalogue order only. The journey order (sectors) lives in progress.js.
 // Handcrafted levels. x/y are board units (1 unit = one grid cell).
 // See logic.js for node types and DESIGN.md for the difficulty framework
 // (diff = the designer's intended 1-5 rating). Check with: npm run solve
 const LEVELS = [
   { // 1 — learn switching and flow
-    name: "Flip it", hint: "Tap the switches to power every ! appliance",
+    id: "flip-it", name: "Flip it", hint: "Tap the switches to power every ! appliance",
     diff: 1, // intended difficulty, see DESIGN.md
     cap: 3,
     nodes: [
@@ -18,7 +20,7 @@ const LEVELS = [
     edges: [["src", "m"], ["m", "sp"], ["sp", "sa"], ["sp", "sb"], ["sa", "lamp"], ["sb", "fan"]],
   },
   { // 2 — limited power: free up capacity before the big load
-    name: "Not enough", hint: "The source can only carry so much",
+    id: "not-enough", name: "Not enough", hint: "The source can only carry so much",
     diff: 2, // intended difficulty, see DESIGN.md
     cap: 4,
     nodes: [
@@ -37,7 +39,7 @@ const LEVELS = [
       ["s0", "lamp"], ["s1", "tv"], ["s2", "fan"], ["s3", "heater"]],
   },
   { // 3 — routing: a router always feeds exactly one output
-    name: "Crossroads", hint: "A router sends power down one path",
+    id: "crossroads", name: "Crossroads", hint: "A router sends power down one path",
     diff: 2, // intended difficulty, see DESIGN.md
     cap: 4,
     nodes: [
@@ -53,7 +55,7 @@ const LEVELS = [
     edges: [["src", "sp"], ["sp", "ra"], ["sp", "rb"], ["ra", "lamp"], ["ra", "heater"], ["rb", "tv"], ["rb", "fan"]],
   },
   { // 4 — required vs optional: the star costs capacity you may need
-    name: "Worth it?", hint: "The star is optional. Power is not.",
+    id: "worth-it", name: "Worth it?", hint: "The star is optional. Power is not.",
     diff: 2, // intended difficulty, see DESIGN.md
     cap: 6,
     nodes: [
@@ -73,7 +75,7 @@ const LEVELS = [
   },
   { // 5 — BRIDGE: pips vs battery. Everything is armed (switches closed) but the main is open: switching it on
     // asks for more than the battery holds. Teaches that pips add up against the cells.
-    name: "Main switch", hint: "Everything is ready to go",
+    id: "main-switch", name: "Main switch", hint: "Everything is ready to go",
     diff: 1, // intended difficulty, see DESIGN.md
     cap: 3,
     nodes: [
@@ -93,7 +95,7 @@ const LEVELS = [
   },
   { // 6 — BRIDGE: free capacity first. The board is live and the battery is already full of something you do not
     // need; the required appliances cannot be added until the player switches it off.
-    name: "Already full", hint: "The battery is full before you start",
+    id: "already-full", name: "Already full", hint: "The battery is full before you start",
     diff: 2, // intended difficulty, see DESIGN.md
     cap: 3,
     nodes: [
@@ -109,7 +111,7 @@ const LEVELS = [
     edges: [["src", "sp"], ["sp", "st"], ["sp", "sh"], ["sp", "sl"], ["st", "tv"], ["sh", "heater"], ["sl", "lamp"]],
   },
   { // 7 — the hard one: trunk + routers + shared appliances
-    name: "Overload", hint: "Everything at once",
+    id: "overload", name: "Overload", hint: "Everything at once",
     diff: 3, // intended difficulty, see DESIGN.md
     cap: 5,
     nodes: [
@@ -129,7 +131,7 @@ const LEVELS = [
     edges: [["sp", "b0"], ["sp", "b1"], ["sp", "b2"], ["b0", "a5"], ["b0", "a4"], ["b0", "a3"], ["b1", "a4"], ["b1", "a0"], ["b1", "a1"], ["b2", "a2"], ["b2", "a3"], ["src", "tr"], ["tr", "sp"]],
   },
   { // 8 — EXPERIMENT: charge appliances (done stays done)
-    name: "Charge up", hint: "Some devices only need power for a while",
+    id: "charge-up", name: "Charge up", hint: "Some devices only need power for a while",
     diff: 3, // intended difficulty, see DESIGN.md
     cap: 4,
     nodes: [
@@ -146,7 +148,7 @@ const LEVELS = [
     edges: [["sp", "b0"], ["b0", "a0"], ["b0", "a1"], ["sp", "b1"], ["b1", "a2"], ["sp", "b2"], ["b2", "a3"], ["src", "sp"]],
   },
   { // 9 — EXPERIMENT: sequencing with a forced start
-    name: "Last in line", hint: "Finish a job, switch it off, reuse the power",
+    id: "last-in-line", name: "Last in line", hint: "Finish a job, switch it off, reuse the power",
     diff: 4, // intended difficulty, see DESIGN.md
     cap: 5,
     nodes: [
@@ -167,7 +169,7 @@ const LEVELS = [
     edges: [["sp", "b0"], ["b0", "a0"], ["b0", "a1"], ["sp", "b1"], ["b1", "a2"], ["b1", "a3"], ["sp", "b2"], ["b2", "a4"], ["sp", "b3"], ["b3", "a5"], ["src", "tr"], ["tr", "sp"]],
   },
   { // 10 — EXPERIMENT: appliances are part of the wire (pass-through)
-    name: "On the line", hint: "An appliance that is off passes nothing on",
+    id: "on-the-line", name: "On the line", hint: "An appliance that is off passes nothing on",
     diff: 1, // intended difficulty, see DESIGN.md
     cap: 4,
     nodes: [
@@ -183,7 +185,7 @@ const LEVELS = [
     edges: [["src", "sp"], ["sp", "tv"], ["sp", "sr"], ["sp", "sf"], ["sr", "radio"], ["sf", "fan"], ["tv", "lamp"]],
   },
   { // 11 — pass-through + capacity: keep the root, cut the branch
-    name: "Root or branch", hint: "Cheap is not always safe to switch off",
+    id: "root-or-branch", name: "Root or branch", hint: "Cheap is not always safe to switch off",
     diff: 3, // intended difficulty, see DESIGN.md
     cap: 6,
     nodes: [
@@ -201,7 +203,7 @@ const LEVELS = [
     edges: [["src", "sp"], ["sp", "a0"], ["a0", "a1"], ["a1", "a2"], ["a0", "a3"], ["a3", "a4"], ["sp", "b0"], ["b0", "a5"], ["a5", "a6"]],
   },
   { // 12 — charge + pass-through + capacity: a finished job still holding the line
-    name: "Done, not free", hint: "A finished job can still be holding the line",
+    id: "done-not-free", name: "Done, not free", hint: "A finished job can still be holding the line",
     diff: 4, // intended difficulty, see DESIGN.md
     cap: 5,
     nodes: [
@@ -217,6 +219,139 @@ const LEVELS = [
       {id: "a4", t: "ap", k: "heater", load: 3, x: 2.1, y: 3.45},
     ],
     edges: [["src", "sp"], ["sp", "b1"], ["b1", "a0"], ["a0", "a1"], ["a1", "a2"], ["sp", "b2"], ["b2", "a3"], ["sp", "b4"], ["b4", "a4"]],
+  },
+  { // 13 (sector 1, slot 7) — planning: a router can move away while another keeps the shared appliance on
+    id: "s1-07", name: "Shared line", hint: "One appliance, two routers",
+    diff: 2, // intended difficulty, see DESIGN.md
+    cap: 5,
+    nodes: [
+      {id: "src", t: "src", x: 2, y: 0},
+      {id: "sp", t: "sp", x: 2, y: 2.1},
+      {id: "b0", t: "rt", s: 1, x: 0.5, y: 3.3},
+      {id: "b1", t: "rt", s: 2, x: 2, y: 3.3},
+      {id: "b2", t: "rt", s: 2, x: 3.5, y: 3.3},
+      {id: "a2", t: "ap", k: "radio", load: 1, x: 0, y: 5, req: true},
+      {id: "a0", t: "ap", k: "tv", load: 2, x: 1, y: 5, req: true},
+      {id: "a3", t: "ap", k: "lamp", load: 1, x: 2, y: 5},
+      {id: "a1", t: "ap", k: "fan", load: 1, x: 3, y: 5, req: true},
+      {id: "a4", t: "ap", k: "kettle", load: 3, x: 4, y: 5},
+    ],
+    edges: [["sp","b0"],["sp","b1"],["sp","b2"],["b0","a2"],["b0","a0"],["b1","a1"],["b1","a2"],["b1","a4"],["b2","a4"],["b2","a1"],["b2","a3"],["src","sp"]],
+  },
+  { // 14 (sector 1, slot 8) — false choice: the required radio is already lit; leaving it alone fails
+    id: "s1-08", name: "Looks done", hint: "A lit appliance can be in the way",
+    diff: 3, // intended difficulty, see DESIGN.md
+    cap: 4,
+    nodes: [
+      {id: "src", t: "src", x: 2, y: 0},
+      {id: "sp", t: "sp", x: 2, y: 2.1},
+      {id: "b0", t: "rt", s: 2, x: 2, y: 3.3},
+      {id: "b1", t: "rt", s: 2, x: 0.5, y: 3.3},
+      {id: "b2", t: "rt", s: 0, x: 3.5, y: 3.3},
+      {id: "a0", t: "ap", k: "fan", load: 1, x: 0, y: 5, req: true},
+      {id: "a1", t: "ap", k: "kettle", load: 3, x: 1, y: 5},
+      {id: "a2", t: "ap", k: "tv", load: 2, x: 2, y: 5, req: true},
+      {id: "a3", t: "ap", k: "radio", load: 1, x: 3, y: 5, req: true},
+      {id: "a4", t: "ap", k: "lamp", load: 1, x: 4, y: 5},
+    ],
+    edges: [["sp","b0"],["sp","b1"],["sp","b2"],["b0","a2"],["b0","a1"],["b0","a3"],["b1","a0"],["b1","a3"],["b1","a4"],["b2","a4"],["b2","a3"],["src","sp"]],
+  },
+  { // 15 (sector 1, slot 9) — rehearses the finale: cut the trunk to step a router past an overload
+    id: "s1-09", name: "Power cut", hint: "Some moves are only safe in the dark",
+    diff: 3, // intended difficulty, see DESIGN.md
+    cap: 4,
+    nodes: [
+      {id: "src", t: "src", x: 2, y: 0},
+      {id: "tr", t: "sw", s: 1, x: 2, y: 1.1},
+      {id: "sp", t: "sp", x: 2, y: 2.1},
+      {id: "b0", t: "rt", s: 2, x: 2, y: 3.3},
+      {id: "b1", t: "sw", s: 0, x: 3.5, y: 3.3},
+      {id: "b2", t: "rt", s: 1, x: 0.5, y: 3.3},
+      {id: "a4", t: "ap", k: "kettle", load: 3, x: 0, y: 5},
+      {id: "a1", t: "ap", k: "fridge", load: 2, x: 1, y: 5, req: true},
+      {id: "a3", t: "ap", k: "radio", load: 1, x: 2, y: 5, req: true},
+      {id: "a0", t: "ap", k: "fan", load: 1, x: 3, y: 5},
+      {id: "a2", t: "ap", k: "tv", load: 2, x: 4, y: 5},
+    ],
+    edges: [["sp","b0"],["sp","b1"],["sp","b2"],["b0","a4"],["b0","a2"],["b0","a3"],["b1","a0"],["b2","a4"],["b2","a1"],["src","tr"],["tr","sp"]],
+  },
+  { // 16 (sector 2, slot 2) — pass-through + capacity: the biggest shed is the one that kills a required child
+    id: "s2-02", name: "Below the line", hint: "Switching one off takes everything below it",
+    diff: 2, // intended difficulty, see DESIGN.md
+    cap: 7,
+    nodes: [
+      {id: "src", t: "src", x: 1.58, y: 0},
+      {id: "sp", t: "sp", x: 1.58, y: 1.1},
+      {id: "bR", t: "sw", x: 2.1, y: 2.2, s: 0},
+      {id: "bD", t: "sw", x: 3.15, y: 2.2, s: 1},
+      {id: "p1", t: "ap", k: "tv", load: 2, x: 0, y: 2.2, s: 1, pass: true},
+      {id: "k1", t: "ap", k: "lamp", load: 1, x: 0, y: 4.35, req: true},
+      {id: "p2", t: "ap", k: "radio", load: 1, x: 1.05, y: 2.2, s: 1, pass: true},
+      {id: "k2", t: "ap", k: "fan", load: 1, x: 1.05, y: 4.35},
+      {id: "r", t: "ap", k: "heater", load: 3, x: 2.1, y: 3.45, req: true},
+      {id: "d", t: "ap", k: "fridge", load: 2, x: 3.15, y: 3.45},
+    ],
+    edges: [["src","sp"],["sp","p1"],["p1","k1"],["sp","p2"],["p2","k2"],["sp","bR"],["bR","r"],["sp","bD"],["bD","d"]],
+  },
+  { // 17 (sector 2, slot 3) — the first charge level: a finished job still draws power until you switch it off
+    id: "s2-03", name: "Fill the ring", hint: "A full ring stays done",
+    diff: 1, // intended difficulty, see DESIGN.md
+    cap: 3,
+    nodes: [
+      {id: "src", t: "src", x: 0.5, y: 0},
+      {id: "sp", t: "sp", x: 0.5, y: 1.3},
+      {id: "sa", t: "sw", x: 0, y: 2.5, s: 0},
+      {id: "sb", t: "sw", x: 1, y: 2.5, s: 0},
+      {id: "tv", t: "ap", k: "tv", load: 2, x: 0, y: 4, task: 2, req: true},
+      {id: "fridge", t: "ap", k: "fridge", load: 2, x: 1, y: 4, task: 2, req: true},
+    ],
+    edges: [["src","sp"],["sp","sa"],["sp","sb"],["sa","tv"],["sb","fridge"]],
+  },
+  { // 18 (sector 2, slot 6) — charge reallocation: the shared-switch pair goes first, so the always-on heater is paused
+    id: "s2-06", name: "Two for one", hint: "Some jobs share a switch",
+    diff: 3, // intended difficulty, see DESIGN.md
+    cap: 5,
+    nodes: [
+      {id: "src", t: "src", x: 1.93, y: 0},
+      {id: "sp", t: "sp", x: 1.93, y: 1.1},
+      {id: "b0", t: "sw", x: 0.53, y: 2.2, s: 0},
+      {id: "b1", t: "sw", x: 2.1, y: 2.2, s: 0},
+      {id: "b2", t: "sw", x: 3.15, y: 2.2, s: 1},
+      {id: "a0", t: "ap", k: "kettle", load: 3, x: 0, y: 3.45, task: 2, req: true},
+      {id: "a1", t: "ap", k: "radio", load: 1, x: 1.05, y: 3.45, task: 2, req: true},
+      {id: "a2", t: "ap", k: "tv", load: 2, x: 2.1, y: 3.45, task: 2, req: true},
+      {id: "a3", t: "ap", k: "heater", load: 3, x: 3.15, y: 3.45, req: true},
+    ],
+    edges: [["src","sp"],["sp","b0"],["b0","a0"],["b0","a1"],["sp","b1"],["b1","a2"],["sp","b2"],["b2","a3"]],
+  },
+  { // 19 (sector 2, slot 7) — charge + pass-through: a required line holds its job's power, so it must come last
+    id: "s2-07", name: "Last line on", hint: "The line you need stays on",
+    diff: 3, // intended difficulty, see DESIGN.md
+    cap: 5,
+    nodes: [
+      {id: "src", t: "src", x: 0.53, y: 0},
+      {id: "sp", t: "sp", x: 0.53, y: 1.1},
+      {id: "p1", t: "ap", k: "fan", load: 1, x: 0, y: 2.2, s: 0, pass: true, req: true},
+      {id: "c1", t: "ap", k: "fridge", load: 2, x: 0, y: 4.35, task: 2, req: true},
+      {id: "p2", t: "ap", k: "radio", load: 1, x: 1.05, y: 2.2, s: 0, pass: true},
+      {id: "c2", t: "ap", k: "tv", load: 2, x: 1.05, y: 4.35, task: 2, req: true},
+    ],
+    edges: [["src","sp"],["sp","p1"],["p1","c1"],["sp","p2"],["p2","c2"]],
+  },
+  { // 20 (sector 2, slot 9) — charge + pass-through: pause the running required line so a pair of jobs that share a line has room
+    id: "s2-09", name: "Pause the line", hint: "A running line can wait",
+    diff: 4, // intended difficulty, see DESIGN.md
+    cap: 5,
+    nodes: [
+      {id: "src", t: "src", x: 1, y: 0},
+      {id: "sp", t: "sp", x: 1, y: 1.1},
+      {id: "pa", t: "ap", k: "lamp", load: 1, x: 0.5, y: 2.2, s: 0, pass: true},
+      {id: "ca1", t: "ap", k: "radio", load: 1, x: 0, y: 4.35, task: 2, req: true},
+      {id: "ca2", t: "ap", k: "heater", load: 3, x: 1, y: 4.35, task: 2, req: true},
+      {id: "pb", t: "ap", k: "fan", load: 1, x: 2.1, y: 2.2, s: 1, pass: true, req: true},
+      {id: "cb", t: "ap", k: "tv", load: 2, x: 2.1, y: 4.35, task: 2, req: true},
+    ],
+    edges: [["src","sp"],["sp","pa"],["pa","ca1"],["pa","ca2"],["sp","pb"],["pb","cb"]],
   },
 ];
 if (typeof module !== "undefined" && module.exports) module.exports = { LEVELS };

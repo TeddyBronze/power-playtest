@@ -1,83 +1,109 @@
 // ============================================================================
-// POWER — "Light Up the Neighborhood" progression (logic only, no rendering)
+// POWER — journey progression (logic only, no rendering)
 //
-// The 12 levels are grouped into five restoration milestones. Completing a level
-// advances its milestone; completing a milestone's last level lights that
-// location. Progress is saved locally. No currency, stars, lives or rewards.
+// The journey is a list of SECTORS of exactly 10 poles each. A pole is one level
+// (slot 1-10); slot 10 is the sector's transformer / substation and its finale.
+// Levels are addressed by stable id. Completing a level connects a wire from the
+// previous pole; the wire chain is the unbroken run of completed levels from the start.
 //
-// Level numbers here are 0-based indexes into LEVELS (level 1 = index 0).
-// Puzzle content, difficulty and solutions are untouched: this only groups them.
+// Puzzle content, difficulty and solutions are untouched: this only orders them.
+// Rendering lives in journeymap.js, which reads this module, so the visuals can be
+// replaced with final art without touching the rules.
 //
-// Rendering lives in neighborhood.js, which reads this module, so the visuals can
-// be replaced with final art without touching the rules.
+// Saves: power.progress.v2 = { v:2, completed:[ids], celebrated:[sectorIds] }.
+// A v1 save (indexes into the old 12-level catalogue, plus milestones) is migrated on
+// load through LEGACY below and left untouched.
 // ============================================================================
 const Progress = (function () {
-  const KEY = "power.progress.v1";
+  const KEY = "power.progress.v2", KEY_V1 = "power.progress.v1";
+  const LEVEL_LIST = typeof LEVELS !== "undefined" ? LEVELS : require("./levels.js").LEVELS;
+  const store = () => { try { return typeof localStorage !== "undefined" ? localStorage : null; } catch (e) { return null; } };
 
-  // How the 12 levels map to locations (and why):
-  //   Family Home      1-2   switching + the first capacity limit; short, so the first light-up comes quickly
-  //   Neighbor's Flat  3-5   routers, a choice with a bonus, then the first capacity teaching level
-  //   The Compound     6-8   a full battery, trunk + routers, charge
-  //   The Corner Shop  9-10  sequencing, then appliances as part of the wire
-  //   Our Street       11-12 pass-through + capacity, then charge + pass-through together
-  const MILESTONES = [
-    { id: "home", name: "The Family Home", levels: [0, 1] },
-    { id: "flat", name: "The Neighbor's Flat", levels: [2, 3, 4] },
-    { id: "compound", name: "The Compound", levels: [5, 6, 7] },
-    { id: "shop", name: "The Corner Shop", levels: [8, 9] },
-    { id: "street", name: "Our Street", levels: [10, 11] },
+  // The v1 catalogue, frozen: old save index -> level id. Never edit.
+  const LEGACY = ["flip-it", "not-enough", "crossroads", "worth-it", "main-switch", "already-full", "overload", "charge-up", "last-in-line", "on-the-line", "root-or-branch", "done-not-free"];
+
+  // Journey order. null = a slot with no level yet (the pole is drawn as an unbuilt stub and skipped).
+  // Sector 1: switching, capacity, routing. Sector 2: pass-through and charge.
+  const SECTORS = [
+    { id: "s1", name: "Residential street", theme: "street",
+      levels: ["flip-it", "main-switch", "not-enough", "already-full", "crossroads", "worth-it", "s1-07", "s1-08", "s1-09", "overload"] },
+    { id: "s2", name: "The compound", theme: "compound",
+      levels: ["on-the-line", "s2-02", "s2-03", "charge-up", "root-or-branch", "s2-06", "s2-07", "last-in-line", "s2-09", "done-not-free"] },
   ];
-  const TOTAL = MILESTONES.reduce((n, m) => n + m.levels.length, 0);
 
-  let data = load();
+  const indexOfId = {}; LEVEL_LIST.forEach((l, i) => { if (l.id) indexOfId[l.id] = i; });
+  // every pole of the route, in order (built or not)
+  const ROUTE = [];
+  SECTORS.forEach((s, si) => s.levels.forEach((id, k) => {
+    const index = id && indexOfId[id] !== undefined ? indexOfId[id] : null;
+    ROUTE.push({ sector: si, slot: k + 1, pos: si * 10 + k + 1, id: index === null ? null : id, index, built: index !== null, finale: k === 9 });
+  }));
+  const CHAIN = ROUTE.filter((p) => p.built);            // the playable poles, in order
+  ROUTE.forEach((p) => { p.chain = p.built ? CHAIN.indexOf(p) : -1; });
+  const poleOfIndex = {}; CHAIN.forEach((p) => { poleOfIndex[p.index] = p; });
+
+  // ---- save / migrate --------------------------------------------------------
+  let data = { v: 2, completed: [], celebrated: [] };
+  function parse(key) { const s = store(); if (!s) return null; try { return JSON.parse(s.getItem(key)); } catch (e) { return null; } }
   function load() {
-    try {
-      const v = JSON.parse(localStorage.getItem(KEY));
-      if (v && Array.isArray(v.completed)) {
-        return {
-          completed: [...new Set(v.completed.filter((i) => Number.isInteger(i) && i >= 0 && i < TOTAL))],
-          celebrated: Array.isArray(v.celebrated) ? [...new Set(v.celebrated.filter((i) => Number.isInteger(i)))] : [],
-        };
-      }
-    } catch (e) { /* storage blocked or corrupt: start fresh */ }
-    return { completed: [], celebrated: [] };
+    let d = null;
+    const v2 = parse(KEY);
+    if (v2 && Array.isArray(v2.completed)) {
+      d = { v: 2, completed: [...new Set(v2.completed.filter((x) => typeof x === "string"))], celebrated: Array.isArray(v2.celebrated) ? [...new Set(v2.celebrated.filter((x) => typeof x === "string"))] : [] };
+    } else {
+      const v1 = parse(KEY_V1); // migrate: old indexes -> ids; unknown or out-of-range entries are dropped, v1 is left as it was
+      const ids = v1 && Array.isArray(v1.completed) ? v1.completed.filter((i) => Number.isInteger(i) && i >= 0 && i < LEGACY.length).map((i) => LEGACY[i]) : [];
+      d = { v: 2, completed: [...new Set(ids)], celebrated: [] };
+      if (ids.length) { data = d; save(); }
+    }
+    data = d;
+    // sectors that are already complete when the save is read were celebrated before (or are a migration): stay quiet
+    SECTORS.forEach((s, si) => { if (sectorDone(si) && !d.celebrated.includes(s.id)) d.celebrated.push(s.id); });
+    return d;
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* ignore */ } }
+  function save() { const s = store(); if (!s) return; try { s.setItem(KEY, JSON.stringify(data)); } catch (e) { /* ignore */ } }
 
-  const milestoneOf = (level) => MILESTONES.findIndex((m) => m.levels.includes(level));
-  const isComplete = (level) => data.completed.includes(level);
-  const counts = (m) => ({ done: MILESTONES[m].levels.filter(isComplete).length, total: MILESTONES[m].levels.length });
-  const milestoneComplete = (m) => { const c = counts(m); return c.done === c.total; };
-  const allComplete = () => MILESTONES.every((_, m) => milestoneComplete(m));
-  const currentMilestone = () => MILESTONES.findIndex((_, m) => !milestoneComplete(m)); // -1 when everything is restored
-  // 'done' | 'current' | 'locked'
-  function status(m) { if (milestoneComplete(m)) return "done"; return m === currentMilestone() ? "current" : "locked"; }
-
-  // Completing a level. Replays change nothing. Returns what happened, or null for levels outside the plan.
-  function record(level) {
-    const m = milestoneOf(level);
-    if (m < 0) return null;
-    const replay = isComplete(level);
-    if (!replay) { data.completed.push(level); save(); }
-    const c = counts(m);
-    return { level, milestone: m, replay, done: c.done, total: c.total, milestoneDone: !replay && c.done === c.total };
+  // ---- queries ---------------------------------------------------------------
+  const isCompleteId = (id) => data.completed.includes(id);
+  const isComplete = (index) => !!LEVEL_LIST[index] && isCompleteId(LEVEL_LIST[index].id);
+  const connected = () => { let n = 0; while (n < CHAIN.length && isCompleteId(CHAIN[n].id)) n++; return n; };   // length of the unbroken completed run
+  const nextPole = () => CHAIN[connected()] || null;
+  const nextIndex = () => { const p = nextPole(); return p ? p.index : null; };
+  // 'done' | 'current' | 'locked' | 'gap'
+  function status(p) { if (!p.built) return "gap"; if (isCompleteId(p.id)) return "done"; return nextPole() === p ? "current" : "locked"; }
+  const wireLit = (p) => p.built && p.chain < connected();                // the wire INTO this pole carries power
+  const sectorPoles = (si) => ROUTE.filter((p) => p.sector === si);
+  const sectorBuilt = (si) => sectorPoles(si).every((p) => p.built);
+  function sectorDone(si) { // a finale needs all ten levels, all complete, and the wire run unbroken to the transformer
+    if (!sectorBuilt(si)) return false;
+    const last = sectorPoles(si)[9];
+    return connected() > last.chain;
   }
-
-  // Where Continue goes: the next unfinished level after `after`, else the first unfinished level, else null.
-  function nextLevel(after) {
-    const flat = MILESTONES.flatMap((m) => m.levels);
-    const later = flat.find((i) => i > (after === undefined ? -1 : after) && !isComplete(i));
-    if (later !== undefined) return later;
-    const any = flat.find((i) => !isComplete(i));
-    return any === undefined ? null : any;
-  }
-
+  const wasCelebrated = (si) => data.celebrated.includes(SECTORS[si].id);
+  function markCelebrated(si) { if (!wasCelebrated(si)) { data.celebrated.push(SECTORS[si].id); save(); } }
   const hasAny = () => data.completed.length > 0;
-  const wasCelebrated = (m) => data.celebrated.includes(m);
-  function markCelebrated(m) { if (!data.celebrated.includes(m)) { data.celebrated.push(m); save(); } }
-  function reset() { data = { completed: [], celebrated: [] }; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } }
+  function reset() { data = { v: 2, completed: [], celebrated: [] }; const s = store(); if (s) { try { s.removeItem(KEY); s.removeItem(KEY_V1); } catch (e) { /* ignore */ } } }
 
-  return { MILESTONES, TOTAL, milestoneOf, isComplete, counts, milestoneComplete, allComplete, currentMilestone, status, record, nextLevel, hasAny, wasCelebrated, markCelebrated, reset };
+  // position helpers (journey position = (sector-1)*10 + slot; used by #N links, the HUD and the number keys)
+  const poleAt = (n) => ROUTE[n - 1] && ROUTE[n - 1].built ? ROUTE[n - 1] : null;
+  const indexAtPos = (n) => { const p = poleAt(n); return p ? p.index : null; };
+  const poleFor = (index) => poleOfIndex[index] || null;
+  const idToIndex = (id) => (indexOfId[id] === undefined ? null : indexOfId[id]);
+
+  // Completing a level. Replays change nothing. Returns what happened, or null for a level that is off the journey.
+  function record(index) {
+    const p = poleOfIndex[index]; if (!p) return null;
+    const replay = isCompleteId(p.id), from = connected();
+    if (!replay) { data.completed.push(p.id); save(); }
+    const to = connected();
+    let finale = -1;
+    SECTORS.forEach((s, si) => { if (finale < 0 && !wasCelebrated(si) && sectorDone(si)) finale = si; });
+    return { index, id: p.id, pole: p, sector: p.sector, slot: p.slot, replay, from, to, finale, connected: p.chain < to };
+  }
+
+  data = load(); // after every helper above exists
+
+  return { SECTORS, ROUTE, CHAIN, LEGACY, record, status, wireLit, nextPole, nextIndex, connected, isComplete, isCompleteId, sectorBuilt, sectorDone, sectorPoles, wasCelebrated, markCelebrated, hasAny, reset, poleAt, indexAtPos, poleFor, idToIndex };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = { Progress };
