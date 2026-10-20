@@ -197,7 +197,7 @@ const HouseScene = (function () {
       });
       ctx.restore();
       if (r.name) {
-        ctx.fillStyle = C.label; ctx.font = `600 ${Math.max(8, u * 0.13)}px system-ui, sans-serif`; ctx.textBaseline = "top"; ctx.textAlign = "left";
+        ctx.fillStyle = C.label; ctx.font = TXT.font(Math.max(8, u * 0.13)); ctx.textBaseline = "top"; ctx.textAlign = "left";
         const fitW = x1 - x0 - 2 * wallT - 8;
         const label = [r.name, r.name.split(" ")[0].slice(0, 7)].find((t) => ctx.measureText(t).width <= fitW);
         if (label) ctx.fillText(label, x0 + wallT + 4, y0 + 5);
@@ -235,7 +235,7 @@ const HouseScene = (function () {
     const sw = cells * (u * 0.27 + u * 0.05) + u * 0.05 + u * 0.12, sh = u * 0.34 + u * 0.22, sx = api.px(srcNode), sy = api.py(srcNode);
     ctx.fillStyle = C.plate; ctx.strokeStyle = G.mode === "tripped" ? "rgba(255,77,77,0.6)" : C.plateEdge; ctx.lineWidth = 2;
     rr(ctx, sx - sw / 2 - u * 0.14, sy - sh / 2 - u * 0.12, sw + u * 0.28, sh + u * 0.24, u * 0.1); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = C.label; ctx.font = `700 ${Math.max(8, u * 0.13)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.fillStyle = C.label; ctx.font = TXT.font(Math.max(8, u * 0.13)); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
     ctx.fillText("POWER IN", sx, sy - sh / 2 - u * 0.16);
 
     // --- wall plates behind every switch / router so they read as things you can tap

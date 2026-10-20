@@ -118,13 +118,13 @@ const Discovery = (function () {
   function drawPanelText(ctx, G, cy) { // play mode only
     const d = G.disc, s = stepOf(d); ctx.textAlign = "center"; ctx.textBaseline = "middle";
     if (d.sub === "caption") {
-      ctx.font = "700 17px system-ui, sans-serif"; ctx.fillStyle = AMBER_HI; ctx.globalAlpha = Math.min(1, (G.t - d.capAt) * 6);
-      wrap(ctx, s.caption, W - 40).forEach((ln, i, arr) => ctx.fillText(ln, W / 2, cy - 2 + (i - (arr.length - 1) / 2) * 22));
+      ctx.font = TXT.font(17); ctx.globalAlpha = Math.min(1, (G.t - d.capAt) * 6);
+      wrap(ctx, s.caption, W - 40).forEach((ln, i, arr) => TXT.soft(ctx, ln, W / 2, cy - 2 + (i - (arr.length - 1) / 2) * 22, 17, { color: AMBER_HI }));
       ctx.globalAlpha = 1; return;
     }
-    ctx.font = "700 16px system-ui, sans-serif"; ctx.fillStyle = TEXT;
+    ctx.font = TXT.font(16);
     const lines = wrap(ctx, s.prompt, W - 44);
-    lines.forEach((ln, i) => ctx.fillText(ln, W / 2, cy - 4 + (i - (lines.length - 1) / 2) * 22));
+    lines.forEach((ln, i) => TXT.soft(ctx, ln, W / 2, cy - 4 + (i - (lines.length - 1) / 2) * 22, 16, { color: TEXT }));
   }
 
   return { begin, end, update, allows, rejected, drawOverlay, drawPanelText, enableTesting, reset };

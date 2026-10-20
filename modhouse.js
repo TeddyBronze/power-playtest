@@ -37,6 +37,10 @@
     "LOWER": { floor: ["plant_small", "side_table", "plant_large"], wall: [] },
   };
   const WALLS = ["wall_back", "wall_back_2", "wall_back_3"];
+  // the floor slab is drawn lower by exactly the height of its visible top surface (sprite height above its base,
+  // minus the front face), so that surface sits below the appliance labels instead of behind them
+  const floorDrop = () => (A ? (A.slab_floor.pivot_px[1] - A.slab_floor.footprint.h * COS * NPPU) / NPPU : 0);
+  const SEAM = 0.06; // ground-floor walls and dividers reach this far behind the slab so no gap can open
   const SLAB_T = 0.2, TOPFACE = 0.23, SPLIT_MIN = -0.2; // storey slab thickness; how much of a slab's top shows above it at 10 degrees
 
   // a piece's rectangle in board units when its pivot sits at (x, base)
@@ -147,7 +151,7 @@
     if (Math.abs(other - src.x) > half + 0.3) roof.push({ id: "roof_vent", x: other });
     // ground contact: greenery over the two front corners of the foundation (+ a few tufts on wide houses),
     // varied per level but stable, dropped where it would touch a node or label
-    const ground = [], gb = S.floor + 0.28 + (A.slab_floor.size_px[1] - A.slab_floor.pivot_px[1]) / NPPU; // foundation's visible bottom edge
+    const ground = [], gb = S.floor + 0.28 + floorDrop() + (A.slab_floor.size_px[1] - A.slab_floor.pivot_px[1]) / NPPU; // foundation's visible bottom edge
     const gHalf = ((S.right + 0.09) - (S.left - 0.09) + 0.08) / 2, gcx = (S.left + S.right) / 2, xL = gcx - gHalf, xR = gcx + gHalf;
     let seed = [...(G.tut ? "tutorial" : (LEVELS[G.levelIndex] || {}).id || "level")].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
     const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
@@ -199,7 +203,7 @@
 
     // backdrop: fills the screen with the lawn under the building. Zoomed in when needed so the foundation lands
     // mid-lawn AND the image still reaches the bottom of the screen (pushing it down instead put the house on the hedge line)
-    const slabBase = Y(S.floor + 0.28), groundY = slabBase + (A.slab_floor.size_px[1] - A.slab_floor.pivot_px[1]) / NPPU * u; // visible bottom edge of the floor slab
+    const FD = floorDrop(), slabBase = Y(S.floor + 0.28 + FD), groundY = slabBase + (A.slab_floor.size_px[1] - A.slab_floor.pivot_px[1]) / NPPU * u; // visible bottom edge of the floor slab
     const s = Math.max(W / BG.naturalWidth, H / BG.naturalHeight, (H - groundY) / (BG.naturalHeight - BG_GROUND), groundY / BG_GROUND) * 1.02;
     const bw = BG.naturalWidth * s, bh = BG.naturalHeight * s;
     let oy = groundY - BG_GROUND * s; if (oy + bh < H) oy = H - bh; if (oy > 0) oy = 0;
@@ -211,6 +215,7 @@
     // ground shadow on the lawn: a wide soft one in front of and around the foundation, and a tighter, darker core
     const gx = X(cx), half = (width + 0.1) * u / 2;
     const blob = (rx, ry, dy, a) => {
+      if (!(rx > 0 && ry > 0)) return; // e.g. before the first layout, when u is still 0
       c.save(); c.translate(gx, groundY + dy); c.scale(1, ry / rx);
       const g = c.createRadialGradient(0, 0, 0, 0, 0, rx); g.addColorStop(0, `rgba(4,6,20,${a})`); g.addColorStop(0.55, `rgba(4,6,20,${a * 0.55})`); g.addColorStop(1, "rgba(4,6,20,0)");
       c.fillStyle = g; c.beginPath(); c.arc(0, 0, rx, 0, 7); c.fill(); c.restore();
@@ -222,7 +227,8 @@
     // rooms: back wall, props, light spill
     lay.rooms.forEach((r) => {
       const Lr = roomLit(r); r.lit = Lr;
-      panel(r.wall, (r.x0 + r.x1) / 2, r.y1, r.x1 - r.x0, (r.y1 - r.y0) / COS, Lr);
+      const ext = FD > 0 && Math.abs(r.y1 - S.floor) < 1e-6 ? SEAM : 0; // hidden behind the dropped slab
+      panel(r.wall, (r.x0 + r.x1) / 2, r.y1 + ext, r.x1 - r.x0, (r.y1 - r.y0 + ext) / COS, Lr);
       r.items.forEach((it) => P(it.id, it.x, it.base, Lr, it.scale));
       if (Lr > 0.01) {
         const x0 = X(r.x0), y0 = Y(r.y0), w = (r.x1 - r.x0) * u, h = (r.y1 - r.y0) * u;
@@ -240,7 +246,8 @@
 
     // dividers: outer walls and room walls of the lower storey, then the upper storey's
     const top = S.ceiling, lowH = (S.floor - lay.lowerTop) / COS;
-    [S.left, S.right, ...S.walls].forEach((x) => panel("divider", x, S.floor, A.divider.footprint.w, lowH, near(x, lay.lowerTop, S.floor)));
+    const dExt = FD > 0 ? SEAM : 0;
+    [S.left, S.right, ...S.walls].forEach((x) => panel("divider", x, S.floor + dExt, A.divider.footprint.w, lowH + dExt / COS, near(x, lay.lowerTop, S.floor)));
     if (lay.split !== null) {
       const upB = lay.split - SLAB_T / 2, upH = (upB - top) / COS;
       [S.left, S.right, ...lay.upperEdges].forEach((x) => panel("divider", x, upB, A.divider.footprint.w, upH, near(x, top, upB)));
@@ -248,9 +255,9 @@
     }
     // storey and floor slabs, roof slab with parapet
     if (S.slab !== null) panel("slab_storey", cx, S.slab + 0.1, width, A.slab_storey.footprint.h, rowLit(S.slab - 0.2, S.slab + 0.2));
-    panel("slab_floor", cx, S.floor + 0.28, width + 0.08, A.slab_floor.footprint.h, rowLit(S.floor - 0.2, S.floor));
+    panel("slab_floor", cx, S.floor + 0.28 + FD, width + 0.08, A.slab_floor.footprint.h, rowLit(S.floor - 0.2, S.floor));
     { // the foundation's front face darkens toward the ground, and a thin dark line marks where it meets the grass
-      const sx = X(cx - (width + 0.08) / 2), sw = (width + 0.08) * u, top0 = Y(S.floor), sg = c.createLinearGradient(0, top0, 0, groundY);
+      const sx = X(cx - (width + 0.08) / 2), sw = (width + 0.08) * u, top0 = Y(S.floor + FD), sg = c.createLinearGradient(0, top0, 0, groundY);
       sg.addColorStop(0, "rgba(6,8,26,0)"); sg.addColorStop(0.5, "rgba(6,8,26,0.12)"); sg.addColorStop(1, "rgba(6,8,26,0.42)");
       c.save(); c.beginPath(); c.rect(sx, top0, sw, groundY - top0 + 1); c.clip(); c.fillStyle = sg; c.fillRect(sx, top0, sw, groundY - top0 + 1); c.restore();
       const cl = c.createLinearGradient(0, groundY - 2, 0, groundY + u * 0.12); cl.addColorStop(0, "rgba(3,4,16,0.75)"); cl.addColorStop(1, "rgba(3,4,16,0)");

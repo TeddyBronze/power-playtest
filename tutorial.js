@@ -175,23 +175,23 @@ const Tutorial = (function () {
   function drawPanelText(ctx, G, cy) { // play mode only
     const T = G.tut; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     if (T.sub === "caption") {
-      ctx.font = "700 17px system-ui, sans-serif"; ctx.fillStyle = AMBER_HI;
+      ctx.font = TXT.font(17);
       const k = Math.min(1, (G.t - T.capAt) * 6); ctx.globalAlpha = k;
-      wrap(ctx, T.caption, W - 40).forEach((ln, i, arr) => ctx.fillText(ln, W / 2, cy - 2 + (i - (arr.length - 1) / 2) * 22));
+      wrap(ctx, T.caption, W - 40).forEach((ln, i, arr) => TXT.soft(ctx, ln, W / 2, cy - 2 + (i - (arr.length - 1) / 2) * 22, 17, { color: AMBER_HI }));
       ctx.globalAlpha = 1; return;
     }
-    ctx.font = "700 16px system-ui, sans-serif"; ctx.fillStyle = TEXT;
+    ctx.font = TXT.font(16);
     const lines = wrap(ctx, PROMPT[T.step], W - 44);
-    lines.forEach((ln, i) => ctx.fillText(ln, W / 2, cy - 4 + (i - (lines.length - 1) / 2) * 22));
+    lines.forEach((ln, i) => TXT.soft(ctx, ln, W / 2, cy - 4 + (i - (lines.length - 1) / 2) * 22, 16, { color: TEXT }));
   }
   function drawWon(ctx, G, cy) { // step 5
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const k = Math.min(1, G.modeT * 5), e = 1 - Math.pow(1 - k, 3);
     ctx.save(); ctx.translate(0, (1 - e) * 24); ctx.globalAlpha = e;
-    ctx.fillStyle = GREEN; ctx.font = "800 30px system-ui, sans-serif"; ctx.shadowColor = GREEN; ctx.shadowBlur = 16; ctx.fillText("You did it!", W / 2, cy - 10); ctx.shadowBlur = 0;
-    ctx.fillStyle = TEXT; ctx.font = "600 14px system-ui, sans-serif"; ctx.fillText(PROMPT[5].replace("You did it! ", ""), W / 2, cy + 16);
-    ctx.fillStyle = DIM; ctx.font = "500 12.5px system-ui, sans-serif"; ctx.fillText(CAPTION[5], W / 2, cy + 36);
-    if (G.modeT > 0.5) { ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = TEXT; ctx.font = "600 14px system-ui, sans-serif"; ctx.fillText("tap to start", W / 2, cy + 62); }
+    TXT.title(ctx, "You did it!", W / 2, cy - 10, 30, { maxW: W - 32 });
+    TXT.soft(ctx, PROMPT[5].replace("You did it! ", ""), W / 2, cy + 16, 14, { maxW: W - 28, color: TEXT });
+    TXT.soft(ctx, CAPTION[5], W / 2, cy + 36, 12.5, { maxW: W - 28, color: "#c3cde4" });
+    if (G.modeT > 0.5) { ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); TXT.soft(ctx, "tap to start", W / 2, cy + 62, 14, { color: TEXT }); }
     ctx.restore();
   }
 

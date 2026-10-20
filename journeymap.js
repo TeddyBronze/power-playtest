@@ -186,7 +186,7 @@ const JourneyMap = (function () {
 
   // ---- DOM ---------------------------------------------------------------------------------------------------
   const CSS = `
-  .jm{position:fixed;inset:0;z-index:30;background:#070a13;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#eef2fa;user-select:none;-webkit-user-select:none}
+  .jm{position:fixed;inset:0;z-index:30;background:#070a13;font-family:"POWER Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#eef2fa;user-select:none;-webkit-user-select:none}
   .jm.hidden{display:none}
   .jm-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-y}
   .jm-scroll::-webkit-scrollbar{display:none}
@@ -196,11 +196,12 @@ const JourneyMap = (function () {
   @keyframes jmIn{from{opacity:0;transform:scale(1.35)}to{opacity:1;transform:scale(1)}}
   .jm.leaving .jm-col{transition:transform .28s ease-in,opacity .28s ease-in;opacity:0}
   .jm-top{position:absolute;left:0;right:0;top:0;height:calc(90px + env(safe-area-inset-top));background:linear-gradient(#070a13e0,#070a1300);pointer-events:none}
-  .jm-title{position:absolute;left:16px;right:16px;top:calc(18px + env(safe-area-inset-top));text-align:center;font-size:26px;font-weight:800;text-shadow:0 0 18px rgba(255,176,46,.55);pointer-events:none;opacity:0;transition:opacity .5s}
+  .jm-title{position:absolute;left:60px;right:60px;top:calc(18px + env(safe-area-inset-top));text-align:center;font-size:clamp(18px,6.2vw,28px);white-space:nowrap;font-weight:700;color:#ffe39a;background:linear-gradient(#fff8e4,#ffe39a 45%,#ffb42a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 1.2px #0b1233) drop-shadow(0 0 1.2px #0b1233) drop-shadow(0 2.5px 0 #0b1233) drop-shadow(0 0 14px rgba(255,176,46,.45));pointer-events:none;opacity:0;transition:opacity .5s}
   .jm-title.on{opacity:1}
   .jm-close{position:absolute;top:calc(10px + env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:50%;border:2px solid #2a3558;background:#0e1424;color:#eef2fa;font-size:22px;line-height:1;z-index:3}
   .jm-actions{position:absolute;left:0;right:0;bottom:0;padding:34px 20px calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center;background:linear-gradient(#070a1300,#070a13d8 60%);pointer-events:none}
-  .jm-continue{pointer-events:auto;width:100%;max-width:420px;height:58px;border:0;border-radius:18px;background:linear-gradient(#ffc24d,#ffa51f);color:#1b1304;font-size:19px;font-weight:800;box-shadow:0 0 24px rgba(255,176,46,.35);animation:jmPulse 1.8s infinite}
+  .jm button{font-family:inherit}
+  .jm-continue{pointer-events:auto;width:100%;max-width:420px;height:58px;border:0;border-radius:18px;background:linear-gradient(#ffc24d,#ffa51f);color:#14204a;font-size:21px;font-weight:700;box-shadow:0 0 24px rgba(255,176,46,.35);animation:jmPulse 1.8s infinite}
   .jm-continue:active{transform:scale(.98)}
   @keyframes jmPulse{0%,100%{box-shadow:0 0 14px rgba(255,176,46,.25)}50%{box-shadow:0 0 30px rgba(255,176,46,.6)}}
   .jm-recentre{position:absolute;right:16px;bottom:calc(96px + env(safe-area-inset-bottom));width:46px;height:46px;border-radius:50%;border:2px solid #33426b;background:#0e1424ee;display:none;align-items:center;justify-content:center;z-index:3}

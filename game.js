@@ -197,7 +197,7 @@ function layout() {
     g.outs[a].forEach((b) => {
       const na = G.nodes[a], nb = G.nodes[b];
       // wires leaving a pass-through appliance start below its label so it reads as sitting on the line
-      const p0 = { x: px(na), y: py(na) + (na.pass ? G.u * (0.46 + 0.07 * na.load) / 2 + G.u * 0.36 + 12 : 0) }, p1 = { x: px(nb), y: py(nb) };
+      const p0 = { x: px(na), y: py(na) + (na.pass ? labelHalf(na) + G.u * 0.36 + 12 : 0) }, p1 = { x: px(nb), y: py(nb) };
       const rank = rows[na.y].indexOf(a), lane = rows[na.y].length > 1 ? [0.36, 0.5, 0.64][rank % 3] : 0.5;
       const my = p0.y + (p1.y - p0.y) * lane;
       const pts = [p0];
@@ -627,6 +627,14 @@ const GLYPH = {
   },
 };
 
+// Labels:
+//  - pips + label sit on one shared line per row, hung from the largest tile (load 3) rather than each tile's
+//    own size, so appliances of different loads line up
+//  - in the house view they get a dark outline so they read over walls, lit rooms and the floor slab
+//    (modhouse.js also drops the floor slab so its top surface no longer runs behind the label line)
+const LABEL_LOAD = 3;
+const labelHalf = () => G.u * (0.46 + 0.07 * LABEL_LOAD) / 2; // tile half-size the pips/label hang from
+
 function drawAppliance(n) {
   const u = G.u, x = px(n), y = py(n);
   const s = u * (0.46 + 0.07 * n.load), p = n.pw, sc = 1 + n.pop * 0.18;
@@ -684,23 +692,27 @@ function drawAppliance(n) {
   }
   ctx.restore();
   // demand pips + name under the box
+  const outlined = !!G.house; // house view: outlined labels and pips (the plain board keeps its flat look)
   const pw = u * 0.12, pg = u * 0.04, total = n.load * pw + (n.load - 1) * pg;
   for (let i = 0; i < n.load; i++) {
-    const cx = x - total / 2 + i * (pw + pg), cy = y + s / 2 + 7;
+    const cx = x - total / 2 + i * (pw + pg), cy = y + labelHalf(n) + 7;
     ctx.fillStyle = p > 0.3 || (G.mode === "tripped" && G.tripSet && G.tripSet.has(n.id)) ? COL.amber : "#2a3454"; rr(cx, cy, pw, u * 0.1, 2); ctx.fill();
+    if (outlined) { ctx.strokeStyle = "rgba(6,9,24,0.8)"; ctx.lineWidth = 1.5; ctx.stroke(); }
   }
-  ctx.fillStyle = COL.dim; ctx.font = `600 ${Math.max(9, u * 0.15)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
-  ctx.fillText(n.k.toUpperCase(), x, y + s / 2 + 7 + u * 0.1 + 4);
+  // the label may use the space up to its nearest neighbour in the row (POWER Rounded is wide), shrinking a little if needed
+  let gapX = Infinity; Object.values(G.nodes).forEach((m) => { if (m !== n && m.t === "ap" && m.y === n.y) gapX = Math.min(gapX, Math.abs(m.x - n.x)); });
+  TXT.fit(ctx, n.k.toUpperCase(), Math.max(9, u * 0.15), isFinite(gapX) ? gapX * u - 6 : 0, 7.5); ctx.textAlign = "center"; ctx.textBaseline = "top";
+  const ly = y + labelHalf(n) + 7 + u * 0.1 + 4;
+  if (outlined) { ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(6,9,24,0.85)"; ctx.lineWidth = Math.max(3, u * 0.06); ctx.strokeText(n.k.toUpperCase(), x, ly); }
+  ctx.fillStyle = outlined ? "#c3cde4" : COL.dim; ctx.fillText(n.k.toUpperCase(), x, ly);
 }
 
 function drawHud() {
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
-  ctx.fillStyle = COL.dim; ctx.font = "700 11px system-ui, sans-serif";
-  ctx.fillText(G.tut ? "P O W E R   ·   TUTORIAL" : G.cand ? "P O W E R   ·   CANDIDATE " + G.candKey.toUpperCase() + "  (not in catalogue)" : "P O W E R   ·   " + levelLabel(G.levelIndex), 18, 22);
-  ctx.fillStyle = COL.text; ctx.font = "700 22px system-ui, sans-serif";
-  ctx.fillText(curLevel().name, 18, 46);
-  ctx.fillStyle = COL.dim; ctx.font = "500 13px system-ui, sans-serif";
-  ctx.fillText(curLevel().hint, 18, 68);
+  const hudW = W - 18 - 112; // text left of the home / restart buttons
+  TXT.pale(ctx, G.tut ? "POWER  ·  TUTORIAL" : G.cand ? "POWER  ·  CANDIDATE " + G.candKey.toUpperCase() + "  (not in catalogue)" : "POWER  ·  " + levelLabel(G.levelIndex), 18, 21, 12, { maxW: hudW, color: TXT.PALE_DIM });
+  TXT.title(ctx, curLevel().name, 18, 45, 28, { maxW: hudW, minPx: 16 });
+  TXT.pale(ctx, curLevel().hint, 18, 69, 13.5, { maxW: W - 36, minPx: 10 });
   // restart
   ctx.strokeStyle = COL.bodyEdge; ctx.lineWidth = 2; ctx.fillStyle = COL.panel;
   ctx.beginPath(); ctx.arc(W - 32, 34, 20, 0, 7); ctx.fill(); ctx.stroke();
@@ -712,14 +724,14 @@ function drawHud() {
     ctx.strokeStyle = COL.text; ctx.lineWidth = 2.2; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(W - 91, 35); ctx.lineTo(W - 82, 27); ctx.lineTo(W - 73, 35); ctx.moveTo(W - 88, 33); ctx.lineTo(W - 88, 43); ctx.lineTo(W - 76, 43); ctx.lineTo(W - 76, 33); ctx.stroke();
     ctx.fillStyle = COL.amber; ctx.fillRect(W - 84, 36, 4, 4);
   }
-  if (G.disc) { ctx.fillStyle = COL.dim; ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("Skip tip ›", W / 2, H - 26); return; } // discovery
+  if (G.disc) { ctx.textAlign = "center"; TXT.soft(ctx, "Skip tip ›", W / 2, H - 26, 13, { color: COL.dim }); return; } // discovery
   if (G.tut) { // tutorial: a single Skip control instead of the level dots and stats
-    if (G.tut.step < 5) { ctx.fillStyle = COL.dim; ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("Skip tutorial ›", W / 2, H - 26); }
+    if (G.tut.step < 5) { ctx.textAlign = "center"; TXT.soft(ctx, "Skip tutorial ›", W / 2, H - 26, 13, { color: COL.dim }); }
     return;
   }
-  ctx.fillStyle = "#4b5675"; ctx.font = "500 11px system-ui, sans-serif"; ctx.textAlign = "center";
+  ctx.textAlign = "center";
   const mins = G.runTime.toFixed(1);
-  ctx.fillText(`taps ${G.taps}  ·  trips ${G.trips}  ·  ${mins}s`, W / 2, H - 14);
+  TXT.soft(ctx, `taps ${G.taps}  ·  trips ${G.trips}  ·  ${mins}s`, W / 2, H - 14, 11, { color: "#6a789e", outline: "rgba(11,18,51,0.6)" });
 }
 
 function drawPanel() {
@@ -727,15 +739,15 @@ function drawPanel() {
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   if (G.mode === "tripped") {
     const flick = 0.75 + 0.25 * Math.sin(G.t * 22) * Math.max(0, 1 - G.modeT);
-    ctx.fillStyle = `rgba(255,77,77,${flick})`; ctx.font = "800 30px system-ui, sans-serif";
-    ctx.shadowColor = COL.red; ctx.shadowBlur = 18; ctx.fillText("OVERLOAD", W / 2, cy - 6); ctx.shadowBlur = 0;
+    ctx.save(); ctx.globalAlpha = flick;
+    TXT.title(ctx, "OVERLOAD", W / 2, cy - 6, 30, { maxW: W - 32, stops: [[0, "#ffd6cf"], [0.5, "#ff7a6a"], [1, "#e8382e"]] }); ctx.restore();
     if (G.modeT > 0.15) { // why it happened: everything outlined in amber was on at once
-      ctx.globalAlpha = Math.min(1, (G.modeT - 0.15) * 4); ctx.fillStyle = COL.dim; ctx.font = "500 13px system-ui, sans-serif";
-      ctx.fillText(G.tut && G.tut.caption ? G.tut.caption : "Too much on at once — more than the battery holds", W / 2, cy + 20); ctx.globalAlpha = 1;
+      ctx.globalAlpha = Math.min(1, (G.modeT - 0.15) * 4);
+      TXT.soft(ctx, G.tut && G.tut.caption ? G.tut.caption : "Too much on at once — more than the battery holds", W / 2, cy + 20, 13, { maxW: W - 28, minPx: 10, color: "#c3cde4" }); ctx.globalAlpha = 1;
     }
     if (G.modeT > TRIP_LOCK) {
-      ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = COL.text; ctx.font = "600 14px system-ui, sans-serif";
-      ctx.fillText("tap to reset the breaker", W / 2, cy + 42); ctx.globalAlpha = 1;
+      ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5);
+      TXT.soft(ctx, "tap to reset the breaker", W / 2, cy + 42, 14, { color: COL.text }); ctx.globalAlpha = 1;
     }
   } else if (G.mode === "play" && G.disc) {
     Discovery.drawPanelText(ctx, G, cy); // discovery: prompt / caption in place of the goal line
@@ -743,14 +755,17 @@ function drawPanel() {
     const reqs = Object.values(G.nodes).filter((n) => n.t === "ap" && n.req);
     if (reqs.length) {
       const hasTask = reqs.some((n) => n.task), okN = reqs.filter((n) => (n.task ? n.done : n.vp)).length;
-      ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      const a = "Power every", b = hasTask ? "— rings fill, then stay done" : "appliance";
-      const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, r = 9, gap = 7, total = wa + gap + 2 * r + gap + wb;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      const a = "Power every", b = hasTask ? "— rings fill, then stay done" : "appliance", r = 9, gap = 7;
+      let px = 15; ctx.font = TXT.font(px);
+      const words = () => ctx.measureText(a).width + ctx.measureText(b).width, room = W - 28 - 2 * gap - 2 * r;
+      if (words() > room) { px = Math.max(11, px * room / words()); ctx.font = TXT.font(px); } // shrink to fit the phone width
+      const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, total = wa + gap + 2 * r + gap + wb;
       let x = W / 2 - total / 2; const y = cy - 2;
-      ctx.fillStyle = COL.text; ctx.fillText(a, x, y); x += wa + gap;
+      TXT.soft(ctx, a, x, y, px, { color: COL.text }); x += wa + gap;
       ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x + r, y, r, 0, 7); ctx.fill();
       ctx.fillStyle = "#0a0e19"; ctx.font = "800 12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText("!", x + r, y + 1);
-      ctx.font = "600 13px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = COL.text; ctx.fillText(b, x + 2 * r + gap, y);
+      ctx.textAlign = "left"; TXT.soft(ctx, b, x + 2 * r + gap, y, px, { color: COL.text });
       // progress: one dot per required appliance
       const dr = 6, ds = 20, x0 = W / 2 - ((reqs.length - 1) * ds) / 2;
       reqs.forEach((n, i) => {
@@ -767,13 +782,11 @@ function drawPanel() {
   } else if (G.mode === "won") {
     const k = Math.min(1, G.modeT * 5), e = 1 - Math.pow(1 - k, 3);
     ctx.save(); ctx.translate(0, (1 - e) * 24); ctx.globalAlpha = e;
-    ctx.fillStyle = COL.green; ctx.font = "800 30px system-ui, sans-serif"; ctx.shadowColor = COL.green; ctx.shadowBlur = 16;
-    ctx.fillText("POWERED", W / 2, cy - 8); ctx.shadowBlur = 0;
+    TXT.title(ctx, "POWERED", W / 2, cy - 8, 32, { maxW: W - 32 });
     const hasBonus = G.g.order.some((id) => G.g.nodes[id].bonus);
-    ctx.font = "600 14px system-ui, sans-serif";
-    if (hasBonus) { ctx.fillStyle = G.bonus ? COL.gold : COL.dim; ctx.fillText(G.bonus ? "★ bonus lit too!" : "☆ bonus not lit — can you get it?", W / 2, cy + 18); }
-    else { ctx.fillStyle = COL.dim; ctx.fillText(`${G.taps} taps · ${G.trips} trips · ${G.runTime.toFixed(1)}s`, W / 2, cy + 18); }
-    if (G.modeT > 0.5) { ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); ctx.fillStyle = COL.text; ctx.fillText(G.cand ? "tap to replay" : (G.levelIndex === LEVELS.length - 1 ? "tap to play again from level 1" : "tap for next level"), W / 2, cy + 44); }
+    if (hasBonus) TXT.soft(ctx, G.bonus ? "★ bonus lit too!" : "☆ bonus not lit — can you get it?", W / 2, cy + 18, 14, { maxW: W - 28, color: G.bonus ? COL.gold : "#c3cde4" });
+    else TXT.soft(ctx, `${G.taps} taps · ${G.trips} trips · ${G.runTime.toFixed(1)}s`, W / 2, cy + 18, 14, { color: "#c3cde4" });
+    if (G.modeT > 0.5) { ctx.globalAlpha = 0.55 + 0.45 * Math.sin(G.t * 5); TXT.soft(ctx, G.cand ? "tap to replay" : (G.levelIndex === LEVELS.length - 1 ? "tap to play again from level 1" : "tap for next level"), W / 2, cy + 44, 14, { maxW: W - 28, color: COL.text }); }
     ctx.restore();
   }
 }
@@ -855,6 +868,6 @@ function loadFromHash() {
 }
 window.addEventListener("hashchange", loadFromHash);
 loadFromHash();
-requestAnimationFrame(frame);
+TXT.ready().then(() => { last = performance.now(); requestAnimationFrame(frame); }); // text is canvas-drawn: wait for POWER Rounded
 window.__power = G; // handy for playtest/debug in the console
 window.__stepFor = (sec) => { for (let t = 0; t < sec; t += 1 / 60) step(1 / 60); }; // advance the simulation without rendering (automated checks)

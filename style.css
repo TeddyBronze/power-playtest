@@ -1,3 +1,12 @@
+/* POWER Rounded Bold (prototype custom font; source and README in art/fonts) */
+@font-face {
+  font-family: "POWER Rounded";
+  src: url("fonts/POWERRounded-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
