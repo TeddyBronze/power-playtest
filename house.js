@@ -119,6 +119,7 @@ const HouseScene = (function () {
       tgt = Math.min(1, tgt);
       S._lit[i] += (tgt - S._lit[i]) * Math.min(1, dt * (tgt > S._lit[i] ? 6 : 14));
     });
+    S.rooms.forEach((r, i) => { if (r.litBy >= 0) S._lit[i] = S._lit[r.litBy]; }); // side rooms added by layout.js light with their neighbour
     const lit = S._lit.map((v, i) => {
       if (!tripped || !S._tripLit || G.modeT > 0.5) return v;
       const f = Math.max(0, 1 - G.modeT / 0.5) * (Math.sin(G.modeT * 55) > -0.2 ? 1 : 0.15); // brief, readable flicker-out

@@ -1,0 +1,2155 @@
+{
+  "version": 1,
+  "camera": "orthographic, frontal, elevation 10 degrees",
+  "pixels_per_unit": 150.58823529411765,
+  "units": "board cells",
+  "anchor": "base centre, projects world origin (0,0,0); pivot can lie outside image bounds",
+  "state_blend": "normal alpha crossfade off to on, never additive",
+  "atlases": {
+    "off": "atlas_off.png",
+    "on": "atlas_on.png",
+    "size": [
+      2048,
+      603
+    ]
+  },
+  "assets": {
+    "wall_back": {
+      "name": "wall_back",
+      "category": "shell",
+      "footprint": {
+        "w": 1.2,
+        "h": 2.5,
+        "d": 0.29
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x",
+        "z"
+      ],
+      "edge_band": 0.09,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.6000000238418579,
+          -0.05000000447034836,
+          0.0
+        ],
+        "max": [
+          0.6000000238418579,
+          0.23999999463558197,
+          2.5
+        ]
+      },
+      "pivot_px": [
+        95.0,
+        381.206
+      ],
+      "size_px": [
+        190,
+        386
+      ],
+      "source_crop": [
+        161,
+        75,
+        351,
+        461
+      ],
+      "atlas_rect": [
+        42,
+        4,
+        190,
+        386
+      ]
+    },
+    "wall_back_2": {
+      "name": "wall_back_2",
+      "category": "shell",
+      "footprint": {
+        "w": 1.2,
+        "h": 2.5,
+        "d": 0.29
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x",
+        "z"
+      ],
+      "edge_band": 0.09,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.6000000238418579,
+          -0.05000000447034836,
+          0.0
+        ],
+        "max": [
+          0.6000000238418579,
+          0.23999999463558197,
+          2.5
+        ]
+      },
+      "pivot_px": [
+        95.0,
+        381.206
+      ],
+      "size_px": [
+        190,
+        386
+      ],
+      "source_crop": [
+        161,
+        75,
+        351,
+        461
+      ],
+      "atlas_rect": [
+        236,
+        4,
+        190,
+        386
+      ]
+    },
+    "wall_back_3": {
+      "name": "wall_back_3",
+      "category": "shell",
+      "footprint": {
+        "w": 1.2,
+        "h": 2.5,
+        "d": 0.29
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x",
+        "z"
+      ],
+      "edge_band": 0.09,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.6000000238418579,
+          -0.05000000447034836,
+          0.0
+        ],
+        "max": [
+          0.6000000238418579,
+          0.23999999463558197,
+          2.5
+        ]
+      },
+      "pivot_px": [
+        95.0,
+        381.206
+      ],
+      "size_px": [
+        190,
+        386
+      ],
+      "source_crop": [
+        161,
+        75,
+        351,
+        461
+      ],
+      "atlas_rect": [
+        430,
+        4,
+        190,
+        386
+      ]
+    },
+    "divider": {
+      "name": "divider",
+      "category": "shell",
+      "footprint": {
+        "w": 0.17,
+        "h": 2.5,
+        "d": 1.24
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "z"
+      ],
+      "edge_band": 0.05,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.08500000089406967,
+          -0.6200000047683716,
+          0.0
+        ],
+        "max": [
+          0.08500000089406967,
+          0.6200000047683716,
+          2.5
+        ]
+      },
+      "pivot_px": [
+        17.0,
+        390.206
+      ],
+      "size_px": [
+        34,
+        410
+      ],
+      "source_crop": [
+        239,
+        66,
+        273,
+        476
+      ],
+      "atlas_rect": [
+        4,
+        4,
+        34,
+        410
+      ]
+    },
+    "slab_floor": {
+      "name": "slab_floor",
+      "category": "shell",
+      "footprint": {
+        "w": 1.4,
+        "h": 0.28,
+        "d": 1.31
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x"
+      ],
+      "edge_band": 0.11,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.699999988079071,
+          -0.6549999713897705,
+          0.0
+        ],
+        "max": [
+          0.699999988079071,
+          0.6549999713897705,
+          0.2800000011920929
+        ]
+      },
+      "pivot_px": [
+        113.0,
+        66.206
+      ],
+      "size_px": [
+        226,
+        91
+      ],
+      "source_crop": [
+        143,
+        390,
+        369,
+        481
+      ],
+      "atlas_rect": [
+        445,
+        418,
+        226,
+        91
+      ]
+    },
+    "slab_storey": {
+      "name": "slab_storey",
+      "category": "shell",
+      "footprint": {
+        "w": 1.4,
+        "h": 0.2,
+        "d": 1.31
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x"
+      ],
+      "edge_band": 0.11,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.699999988079071,
+          -0.6549999713897705,
+          0.0
+        ],
+        "max": [
+          0.699999988079071,
+          0.6549999713897705,
+          0.20000000298023224
+        ]
+      },
+      "pivot_px": [
+        113.0,
+        54.206
+      ],
+      "size_px": [
+        226,
+        79
+      ],
+      "source_crop": [
+        143,
+        402,
+        369,
+        481
+      ],
+      "atlas_rect": [
+        858,
+        418,
+        226,
+        79
+      ]
+    },
+    "slab_roof": {
+      "name": "slab_roof",
+      "category": "shell",
+      "footprint": {
+        "w": 1.4,
+        "h": 0.18,
+        "d": 1.31
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x"
+      ],
+      "edge_band": 0.11,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.699999988079071,
+          -0.6549999713897705,
+          0.0
+        ],
+        "max": [
+          0.699999988079071,
+          0.6549999713897705,
+          0.18000000715255737
+        ]
+      },
+      "pivot_px": [
+        113.0,
+        51.206
+      ],
+      "size_px": [
+        226,
+        76
+      ],
+      "source_crop": [
+        143,
+        405,
+        369,
+        481
+      ],
+      "atlas_rect": [
+        1240,
+        418,
+        226,
+        76
+      ]
+    },
+    "parapet_edge": {
+      "name": "parapet_edge",
+      "category": "shell",
+      "footprint": {
+        "w": 1.4,
+        "h": 0.14,
+        "d": 0.15
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x"
+      ],
+      "edge_band": 0.07,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.699999988079071,
+          -0.07500004768371582,
+          0.0
+        ],
+        "max": [
+          0.699999988079071,
+          0.07499998807907104,
+          0.14000000059604645
+        ]
+      },
+      "pivot_px": [
+        110.0,
+        26.206
+      ],
+      "size_px": [
+        220,
+        32
+      ],
+      "source_crop": [
+        146,
+        430,
+        366,
+        462
+      ],
+      "atlas_rect": [
+        610,
+        530,
+        220,
+        32
+      ]
+    },
+    "battery_housing": {
+      "name": "battery_housing",
+      "category": "roof",
+      "footprint": {
+        "w": 1.7,
+        "h": 0.8,
+        "d": 0.4475
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [
+        "x"
+      ],
+      "edge_band": 0.22,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.8500000238418579,
+          -0.22374999523162842,
+          0.0
+        ],
+        "max": [
+          0.8500000238418579,
+          0.22374999523162842,
+          0.800000011920929
+        ]
+      },
+      "pivot_px": [
+        135.0,
+        131.206
+      ],
+      "size_px": [
+        270,
+        143
+      ],
+      "source_crop": [
+        121,
+        325,
+        391,
+        468
+      ],
+      "atlas_rect": [
+        950,
+        4,
+        270,
+        143
+      ]
+    },
+    "water_tank": {
+      "name": "water_tank",
+      "category": "roof",
+      "footprint": {
+        "w": 0.54,
+        "h": 0.685,
+        "d": 0.54
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.27000001072883606,
+          -0.27000001072883606,
+          0.0
+        ],
+        "max": [
+          0.27000001072883606,
+          0.27000001072883606,
+          0.6850000619888306
+        ]
+      },
+      "pivot_px": [
+        45.0,
+        112.206
+      ],
+      "size_px": [
+        90,
+        122
+      ],
+      "source_crop": [
+        211,
+        344,
+        301,
+        466
+      ],
+      "atlas_rect": [
+        1344,
+        4,
+        90,
+        122
+      ]
+    },
+    "roof_vent": {
+      "name": "roof_vent",
+      "category": "roof",
+      "footprint": {
+        "w": 0.5,
+        "h": 0.3,
+        "d": 0.45
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.25,
+          -0.22499999403953552,
+          0.0
+        ],
+        "max": [
+          0.25,
+          0.22499999403953552,
+          0.30000001192092896
+        ]
+      },
+      "pivot_px": [
+        42.0,
+        54.206
+      ],
+      "size_px": [
+        84,
+        63
+      ],
+      "source_crop": [
+        214,
+        402,
+        298,
+        465
+      ],
+      "atlas_rect": [
+        247,
+        530,
+        84,
+        63
+      ]
+    },
+    "roof_box": {
+      "name": "roof_box",
+      "category": "roof",
+      "footprint": {
+        "w": 0.54,
+        "h": 0.365,
+        "d": 0.46
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.27000001072883606,
+          -0.23000000417232513,
+          0.0
+        ],
+        "max": [
+          0.27000001072883606,
+          0.23000000417232513,
+          0.36500000953674316
+        ]
+      },
+      "pivot_px": [
+        45.0,
+        64.206
+      ],
+      "size_px": [
+        90,
+        73
+      ],
+      "source_crop": [
+        211,
+        392,
+        301,
+        465
+      ],
+      "atlas_rect": [
+        1564,
+        418,
+        90,
+        73
+      ]
+    },
+    "window_louvre": {
+      "name": "window_louvre",
+      "category": "openings",
+      "footprint": {
+        "w": 0.6,
+        "h": 0.7,
+        "d": 0.1225
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": true,
+      "emissive_material": "window_louvre_emitter",
+      "bounds": {
+        "min": [
+          -0.30000001192092896,
+          -0.1224999949336052,
+          0.0
+        ],
+        "max": [
+          0.30000001192092896,
+          0.0,
+          0.699999988079071
+        ]
+      },
+      "pivot_px": [
+        52.0,
+        110.206
+      ],
+      "size_px": [
+        103,
+        118
+      ],
+      "source_crop": [
+        204,
+        346,
+        307,
+        464
+      ],
+      "atlas_rect": [
+        1630,
+        4,
+        103,
+        118
+      ]
+    },
+    "window_plain": {
+      "name": "window_plain",
+      "category": "openings",
+      "footprint": {
+        "w": 0.6,
+        "h": 0.7,
+        "d": 0.12
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": true,
+      "emissive_material": "window_plain_emitter",
+      "bounds": {
+        "min": [
+          -0.30000001192092896,
+          -0.11999999731779099,
+          0.0
+        ],
+        "max": [
+          0.30000001192092896,
+          0.0,
+          0.699999988079071
+        ]
+      },
+      "pivot_px": [
+        51.0,
+        109.206
+      ],
+      "size_px": [
+        102,
+        117
+      ],
+      "source_crop": [
+        205,
+        347,
+        307,
+        464
+      ],
+      "atlas_rect": [
+        1737,
+        4,
+        102,
+        117
+      ]
+    },
+    "door_simple": {
+      "name": "door_simple",
+      "category": "openings",
+      "footprint": {
+        "w": 0.6,
+        "h": 1.1,
+        "d": 0.14
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.30000001192092896,
+          -0.13999998569488525,
+          0.0
+        ],
+        "max": [
+          0.30000001192092896,
+          0.0,
+          1.100000023841858
+        ]
+      },
+      "pivot_px": [
+        49.0,
+        167.206
+      ],
+      "size_px": [
+        99,
+        173
+      ],
+      "source_crop": [
+        207,
+        289,
+        306,
+        462
+      ],
+      "atlas_rect": [
+        847,
+        4,
+        99,
+        173
+      ]
+    },
+    "ceiling_light": {
+      "name": "ceiling_light",
+      "category": "lighting",
+      "footprint": {
+        "w": 0.3,
+        "h": 0.12,
+        "d": 0.3
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": true,
+      "emissive_material": "ceiling_light_emitter",
+      "bounds": {
+        "min": [
+          -0.15000000596046448,
+          -0.15000000596046448,
+          0.0
+        ],
+        "max": [
+          0.15000000596046448,
+          0.15000000596046448,
+          0.12000000476837158
+        ]
+      },
+      "pivot_px": [
+        27.0,
+        25.206
+      ],
+      "size_px": [
+        54,
+        30
+      ],
+      "source_crop": [
+        229,
+        431,
+        283,
+        461
+      ],
+      "atlas_rect": [
+        834,
+        530,
+        54,
+        30
+      ]
+    },
+    "wall_sconce": {
+      "name": "wall_sconce",
+      "category": "lighting",
+      "footprint": {
+        "w": 0.15,
+        "h": 0.3,
+        "d": 0.175
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": true,
+      "emissive_material": "wall_sconce_emitter",
+      "bounds": {
+        "min": [
+          -0.07500000298023224,
+          -0.08750000596046448,
+          0.0
+        ],
+        "max": [
+          0.07500000298023224,
+          0.08750000596046448,
+          0.30000001192092896
+        ]
+      },
+      "pivot_px": [
+        16.0,
+        50.206
+      ],
+      "size_px": [
+        31,
+        54
+      ],
+      "source_crop": [
+        240,
+        406,
+        271,
+        460
+      ],
+      "atlas_rect": [
+        511,
+        530,
+        31,
+        54
+      ]
+    },
+    "table_lamp": {
+      "name": "table_lamp",
+      "category": "lighting",
+      "footprint": {
+        "w": 0.26,
+        "h": 0.4,
+        "d": 0.26
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": true,
+      "emissive_material": "table_lamp_emitter",
+      "bounds": {
+        "min": [
+          -0.12999999523162842,
+          -0.12999999523162842,
+          0.0
+        ],
+        "max": [
+          0.12999999523162842,
+          0.12999999523162842,
+          0.4000000059604645
+        ]
+      },
+      "pivot_px": [
+        23.0,
+        65.206
+      ],
+      "size_px": [
+        46,
+        71
+      ],
+      "source_crop": [
+        233,
+        391,
+        279,
+        462
+      ],
+      "atlas_rect": [
+        1752,
+        418,
+        46,
+        71
+      ]
+    },
+    "bed": {
+      "name": "bed",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.75,
+        "h": 0.56,
+        "d": 0.78
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.375,
+          -0.38999998569488525,
+          0.0
+        ],
+        "max": [
+          0.375,
+          0.38999998569488525,
+          0.5600000023841858
+        ]
+      },
+      "pivot_px": [
+        61.0,
+        96.206
+      ],
+      "size_px": [
+        122,
+        108
+      ],
+      "source_crop": [
+        195,
+        360,
+        317,
+        468
+      ],
+      "atlas_rect": [
+        4,
+        418,
+        122,
+        108
+      ]
+    },
+    "bedside_table": {
+      "name": "bedside_table",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.275,
+        "h": 0.28,
+        "d": 0.35
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.13750000298023224,
+          -0.17499999701976776,
+          0.0
+        ],
+        "max": [
+          0.13750000298023224,
+          0.17499999701976776,
+          0.2800000011920929
+        ]
+      },
+      "pivot_px": [
+        25.0,
+        50.206
+      ],
+      "size_px": [
+        50,
+        56
+      ],
+      "source_crop": [
+        231,
+        406,
+        281,
+        462
+      ],
+      "atlas_rect": [
+        393,
+        530,
+        50,
+        56
+      ]
+    },
+    "side_table": {
+      "name": "side_table",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.305,
+        "h": 0.32,
+        "d": 0.35
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.1525000035762787,
+          -0.17499999701976776,
+          0.0
+        ],
+        "max": [
+          0.1525000035762787,
+          0.17499999701976776,
+          0.3199999928474426
+        ]
+      },
+      "pivot_px": [
+        27.0,
+        56.206
+      ],
+      "size_px": [
+        54,
+        62
+      ],
+      "source_crop": [
+        229,
+        400,
+        283,
+        462
+      ],
+      "atlas_rect": [
+        335,
+        530,
+        54,
+        62
+      ]
+    },
+    "cabinet": {
+      "name": "cabinet",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.385,
+        "h": 0.65,
+        "d": 0.45
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.19249999523162842,
+          -0.22499999403953552,
+          0.0
+        ],
+        "max": [
+          0.19249999523162842,
+          0.22499999403953552,
+          0.6499999761581421
+        ]
+      },
+      "pivot_px": [
+        33.0,
+        106.206
+      ],
+      "size_px": [
+        66,
+        114
+      ],
+      "source_crop": [
+        223,
+        350,
+        289,
+        464
+      ],
+      "atlas_rect": [
+        1843,
+        4,
+        66,
+        114
+      ]
+    },
+    "counter": {
+      "name": "counter",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.625,
+        "h": 0.4,
+        "d": 0.5
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.3125,
+          -0.25,
+          0.0
+        ],
+        "max": [
+          0.3125,
+          0.25,
+          0.4000000059604645
+        ]
+      },
+      "pivot_px": [
+        51.0,
+        70.206
+      ],
+      "size_px": [
+        102,
+        79
+      ],
+      "source_crop": [
+        205,
+        386,
+        307,
+        465
+      ],
+      "atlas_rect": [
+        1088,
+        418,
+        102,
+        79
+      ]
+    },
+    "sofa": {
+      "name": "sofa",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.84,
+        "h": 0.535,
+        "d": 0.58
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.42000001668930054,
+          -0.28999999165534973,
+          0.0
+        ],
+        "max": [
+          0.42000001668930054,
+          0.28999999165534973,
+          0.5350000262260437
+        ]
+      },
+      "pivot_px": [
+        68.0,
+        90.206
+      ],
+      "size_px": [
+        135,
+        101
+      ],
+      "source_crop": [
+        188,
+        366,
+        323,
+        467
+      ],
+      "atlas_rect": [
+        130,
+        418,
+        135,
+        101
+      ]
+    },
+    "plant_small": {
+      "name": "plant_small",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.22618,
+        "h": 0.47547,
+        "d": 0.19675
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.11309128254652023,
+          -0.09837371855974197,
+          0.0
+        ],
+        "max": [
+          0.11309128254652023,
+          0.09837371855974197,
+          0.4754715859889984
+        ]
+      },
+      "pivot_px": [
+        21.0,
+        74.206
+      ],
+      "size_px": [
+        42,
+        79
+      ],
+      "source_crop": [
+        235,
+        382,
+        277,
+        461
+      ],
+      "atlas_rect": [
+        1194,
+        418,
+        42,
+        79
+      ]
+    },
+    "plant_large": {
+      "name": "plant_large",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.35058,
+        "h": 0.73698,
+        "d": 0.31225
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.17529147863388062,
+          -0.15612372756004333,
+          0.0
+        ],
+        "max": [
+          0.17529147863388062,
+          0.15612372756004333,
+          0.7369809150695801
+        ]
+      },
+      "pivot_px": [
+        30.0,
+        113.206
+      ],
+      "size_px": [
+        60,
+        119
+      ],
+      "source_crop": [
+        226,
+        343,
+        286,
+        462
+      ],
+      "atlas_rect": [
+        1438,
+        4,
+        60,
+        119
+      ]
+    },
+    "rug": {
+      "name": "rug",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.75,
+        "h": 0.016,
+        "d": 0.55
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.375,
+          -0.2750000059604645,
+          0.0
+        ],
+        "max": [
+          0.375,
+          0.2750000059604645,
+          0.01600000075995922
+        ]
+      },
+      "pivot_px": [
+        60.0,
+        14.206
+      ],
+      "size_px": [
+        120,
+        25
+      ],
+      "source_crop": [
+        196,
+        442,
+        316,
+        467
+      ],
+      "atlas_rect": [
+        1055,
+        530,
+        120,
+        25
+      ]
+    },
+    "picture_frame": {
+      "name": "picture_frame",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.34,
+        "h": 0.32,
+        "d": 0.0725
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.17000000178813934,
+          -0.07249999791383743,
+          0.0
+        ],
+        "max": [
+          0.17000000178813934,
+          0.0,
+          0.3199999928474426
+        ]
+      },
+      "pivot_px": [
+        30.0,
+        51.206
+      ],
+      "size_px": [
+        60,
+        56
+      ],
+      "source_crop": [
+        226,
+        405,
+        286,
+        461
+      ],
+      "atlas_rect": [
+        447,
+        530,
+        60,
+        56
+      ]
+    },
+    "dresser": {
+      "name": "dresser",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.655,
+        "h": 0.55,
+        "d": 0.4095
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.32749998569488525,
+          -0.20475000143051147,
+          0.0
+        ],
+        "max": [
+          0.32749998569488525,
+          0.20475000143051147,
+          0.5499999523162842
+        ]
+      },
+      "pivot_px": [
+        53.0,
+        91.206
+      ],
+      "size_px": [
+        106,
+        98
+      ],
+      "source_crop": [
+        203,
+        365,
+        309,
+        463
+      ],
+      "atlas_rect": [
+        269,
+        418,
+        106,
+        98
+      ]
+    },
+    "wardrobe": {
+      "name": "wardrobe",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.69,
+        "h": 1.155,
+        "d": 0.4365
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.3449999988079071,
+          -0.21825000643730164,
+          0.0
+        ],
+        "max": [
+          0.3449999988079071,
+          0.21825000643730164,
+          1.1549999713897705
+        ]
+      },
+      "pivot_px": [
+        56.0,
+        180.206
+      ],
+      "size_px": [
+        112,
+        187
+      ],
+      "source_crop": [
+        200,
+        276,
+        312,
+        463
+      ],
+      "atlas_rect": [
+        624,
+        4,
+        112,
+        187
+      ]
+    },
+    "coat_stand": {
+      "name": "coat_stand",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.36,
+        "h": 0.54,
+        "d": 0.32
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.18000000715255737,
+          -0.1599999964237213,
+          0.0
+        ],
+        "max": [
+          0.18000000715255737,
+          0.1599999964237213,
+          0.5399999618530273
+        ]
+      },
+      "pivot_px": [
+        31.0,
+        84.206
+      ],
+      "size_px": [
+        62,
+        92
+      ],
+      "source_crop": [
+        225,
+        372,
+        287,
+        464
+      ],
+      "atlas_rect": [
+        379,
+        418,
+        62,
+        92
+      ]
+    },
+    "curtain_pair": {
+      "name": "curtain_pair",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.77,
+        "h": 0.7375,
+        "d": 0.1075
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.38499999046325684,
+          -0.053749993443489075,
+          0.0
+        ],
+        "max": [
+          0.38499999046325684,
+          0.053749993443489075,
+          0.7375000715255737
+        ]
+      },
+      "pivot_px": [
+        62.0,
+        115.206
+      ],
+      "size_px": [
+        124,
+        119
+      ],
+      "source_crop": [
+        194,
+        341,
+        318,
+        460
+      ],
+      "atlas_rect": [
+        1502,
+        4,
+        124,
+        119
+      ]
+    },
+    "armchair": {
+      "name": "armchair",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.52,
+        "h": 0.65,
+        "d": 0.47
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.25999999046325684,
+          -0.23500001430511475,
+          0.0
+        ],
+        "max": [
+          0.25999999046325684,
+          0.23500001430511475,
+          0.6500000357627869
+        ]
+      },
+      "pivot_px": [
+        43.0,
+        105.206
+      ],
+      "size_px": [
+        86,
+        114
+      ],
+      "source_crop": [
+        213,
+        351,
+        299,
+        465
+      ],
+      "atlas_rect": [
+        1913,
+        4,
+        86,
+        114
+      ]
+    },
+    "coffee_table": {
+      "name": "coffee_table",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.73,
+        "h": 0.355,
+        "d": 0.43
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.36500000953674316,
+          -0.2150000035762787,
+          0.0
+        ],
+        "max": [
+          0.36500000953674316,
+          0.2150000035762787,
+          0.35499998927116394
+        ]
+      },
+      "pivot_px": [
+        59.0,
+        62.206
+      ],
+      "size_px": [
+        118,
+        70
+      ],
+      "source_crop": [
+        197,
+        394,
+        315,
+        464
+      ],
+      "atlas_rect": [
+        1802,
+        418,
+        118,
+        70
+      ]
+    },
+    "bookcase": {
+      "name": "bookcase",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.625,
+        "h": 1.1425,
+        "d": 0.33
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.3125,
+          -0.16500000655651093,
+          0.0
+        ],
+        "max": [
+          0.3125,
+          0.16500000655651093,
+          1.1424999237060547
+        ]
+      },
+      "pivot_px": [
+        52.0,
+        178.206
+      ],
+      "size_px": [
+        103,
+        186
+      ],
+      "source_crop": [
+        204,
+        278,
+        307,
+        464
+      ],
+      "atlas_rect": [
+        740,
+        4,
+        103,
+        186
+      ]
+    },
+    "media_console": {
+      "name": "media_console",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.815,
+        "h": 0.36,
+        "d": 0.3895
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.4074999988079071,
+          -0.19474999606609344,
+          0.0
+        ],
+        "max": [
+          0.4074999988079071,
+          0.19474999606609344,
+          0.35999998450279236
+        ]
+      },
+      "pivot_px": [
+        66.0,
+        62.206
+      ],
+      "size_px": [
+        131,
+        69
+      ],
+      "source_crop": [
+        190,
+        394,
+        321,
+        463
+      ],
+      "atlas_rect": [
+        4,
+        530,
+        131,
+        69
+      ]
+    },
+    "sink_counter": {
+      "name": "sink_counter",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.72,
+        "h": 0.7375,
+        "d": 0.5025
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.36000001430511475,
+          -0.2512499988079071,
+          0.0
+        ],
+        "max": [
+          0.36000001430511475,
+          0.2512499988079071,
+          0.737500011920929
+        ]
+      },
+      "pivot_px": [
+        58.0,
+        117.206
+      ],
+      "size_px": [
+        116,
+        125
+      ],
+      "source_crop": [
+        198,
+        339,
+        314,
+        464
+      ],
+      "atlas_rect": [
+        1224,
+        4,
+        116,
+        125
+      ]
+    },
+    "upper_cupboard": {
+      "name": "upper_cupboard",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.68,
+        "h": 0.4625,
+        "d": 0.32
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.1599999964237213,
+          0.0
+        ],
+        "max": [
+          0.3400000035762787,
+          0.1599999964237213,
+          0.4624999761581421
+        ]
+      },
+      "pivot_px": [
+        55.0,
+        76.206
+      ],
+      "size_px": [
+        110,
+        82
+      ],
+      "source_crop": [
+        201,
+        380,
+        311,
+        462
+      ],
+      "atlas_rect": [
+        744,
+        418,
+        110,
+        82
+      ]
+    },
+    "kitchen_stool": {
+      "name": "kitchen_stool",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.38,
+        "h": 0.475,
+        "d": 0.38
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.1899999976158142,
+          -0.1899999976158142,
+          0.0
+        ],
+        "max": [
+          0.1899999976158142,
+          0.1899999976158142,
+          0.4750000238418579
+        ]
+      },
+      "pivot_px": [
+        32.0,
+        78.206
+      ],
+      "size_px": [
+        65,
+        85
+      ],
+      "source_crop": [
+        224,
+        378,
+        289,
+        463
+      ],
+      "atlas_rect": [
+        675,
+        418,
+        65,
+        85
+      ]
+    },
+    "kitchen_shelf": {
+      "name": "kitchen_shelf",
+      "category": "furniture",
+      "footprint": {
+        "w": 0.64,
+        "h": 0.3725,
+        "d": 0.22
+      },
+      "origin": "base centre; front -Y; wall-mounted pieces anchored at y=0",
+      "stretch_axes": [],
+      "edge_band": 0.04,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.3199999928474426,
+          -0.10999999940395355,
+          0.0
+        ],
+        "max": [
+          0.3199999928474426,
+          0.10999999940395355,
+          0.3725000023841858
+        ]
+      },
+      "pivot_px": [
+        52.0,
+        61.206
+      ],
+      "size_px": [
+        104,
+        65
+      ],
+      "source_crop": [
+        204,
+        395,
+        308,
+        460
+      ],
+      "atlas_rect": [
+        139,
+        530,
+        104,
+        65
+      ]
+    },
+    "bush_medium": {
+      "name": "bush_medium",
+      "category": "ground",
+      "footprint": {
+        "w": 0.55,
+        "h": 0.45,
+        "d": 0.34268
+      },
+      "origin": "base centre at world origin; front -Y",
+      "stretch_axes": [],
+      "edge_band": 0.025,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.2750000059604645,
+          -0.1713380366563797,
+          0.0
+        ],
+        "max": [
+          0.2750000059604645,
+          0.1713380366563797,
+          0.44999998807907104
+        ]
+      },
+      "pivot_px": [
+        45.0,
+        70.206
+      ],
+      "size_px": [
+        90,
+        76
+      ],
+      "source_crop": [
+        211,
+        386,
+        301,
+        462
+      ],
+      "atlas_rect": [
+        1470,
+        418,
+        90,
+        76
+      ]
+    },
+    "bush_small": {
+      "name": "bush_small",
+      "category": "ground",
+      "footprint": {
+        "w": 0.35,
+        "h": 0.3,
+        "d": 0.23217
+      },
+      "origin": "base centre at world origin; front -Y",
+      "stretch_axes": [],
+      "edge_band": 0.025,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.17500001192092896,
+          -0.11608391255140305,
+          0.0
+        ],
+        "max": [
+          0.17500001192092896,
+          0.11608391255140305,
+          0.30000001192092896
+        ]
+      },
+      "pivot_px": [
+        30.0,
+        48.206
+      ],
+      "size_px": [
+        60,
+        53
+      ],
+      "source_crop": [
+        226,
+        408,
+        286,
+        461
+      ],
+      "atlas_rect": [
+        546,
+        530,
+        60,
+        53
+      ]
+    },
+    "bush_medium_2": {
+      "name": "bush_medium_2",
+      "category": "ground",
+      "footprint": {
+        "w": 0.55,
+        "h": 0.43,
+        "d": 0.38923
+      },
+      "origin": "base centre at world origin; front -Y",
+      "stretch_axes": [],
+      "edge_band": 0.025,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.2750000059604645,
+          -0.1946127861738205,
+          0.0
+        ],
+        "max": [
+          0.2750000059604645,
+          0.1946127861738205,
+          0.429999977350235
+        ]
+      },
+      "pivot_px": [
+        45.0,
+        67.206
+      ],
+      "size_px": [
+        90,
+        73
+      ],
+      "source_crop": [
+        211,
+        389,
+        301,
+        462
+      ],
+      "atlas_rect": [
+        1658,
+        418,
+        90,
+        73
+      ]
+    },
+    "grass_tuft": {
+      "name": "grass_tuft",
+      "category": "ground",
+      "footprint": {
+        "w": 0.3,
+        "h": 0.15,
+        "d": 0.07372
+      },
+      "origin": "base centre at world origin; front -Y",
+      "stretch_axes": [],
+      "edge_band": 0.025,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.14999999105930328,
+          -0.03686195984482765,
+          0.0
+        ],
+        "max": [
+          0.14999999105930328,
+          0.03686195984482765,
+          0.15000000596046448
+        ]
+      },
+      "pivot_px": [
+        27.0,
+        25.206
+      ],
+      "size_px": [
+        53,
+        29
+      ],
+      "source_crop": [
+        229,
+        431,
+        282,
+        460
+      ],
+      "atlas_rect": [
+        949,
+        530,
+        53,
+        29
+      ]
+    },
+    "grass_tuft_2": {
+      "name": "grass_tuft_2",
+      "category": "ground",
+      "footprint": {
+        "w": 0.3,
+        "h": 0.15,
+        "d": 0.08538
+      },
+      "origin": "base centre at world origin; front -Y",
+      "stretch_axes": [],
+      "edge_band": 0.025,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.15000000596046448,
+          -0.042688578367233276,
+          0.0
+        ],
+        "max": [
+          0.15000000596046448,
+          0.042688578367233276,
+          0.14999999105930328
+        ]
+      },
+      "pivot_px": [
+        27.0,
+        25.206
+      ],
+      "size_px": [
+        53,
+        30
+      ],
+      "source_crop": [
+        229,
+        431,
+        282,
+        461
+      ],
+      "atlas_rect": [
+        892,
+        530,
+        53,
+        30
+      ]
+    },
+    "rock_small": {
+      "name": "rock_small",
+      "category": "ground",
+      "footprint": {
+        "w": 0.25,
+        "h": 0.12,
+        "d": 0.17
+      },
+      "origin": "base centre at world origin; front -Y",
+      "stretch_axes": [],
+      "edge_band": 0.025,
+      "emissive": false,
+      "emissive_material": null,
+      "bounds": {
+        "min": [
+          -0.125,
+          -0.08500000089406967,
+          0.0
+        ],
+        "max": [
+          0.125,
+          0.08500000089406967,
+          0.11999999731779099
+        ]
+      },
+      "pivot_px": [
+        23.0,
+        22.206
+      ],
+      "size_px": [
+        45,
+        26
+      ],
+      "source_crop": [
+        233,
+        434,
+        278,
+        460
+      ],
+      "atlas_rect": [
+        1006,
+        530,
+        45,
+        26
+      ]
+    }
+  }
+}
