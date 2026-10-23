@@ -12,9 +12,9 @@
 //                or, for a sector's tenth level, the transformer energises and power
 //                spreads through the surrounding scenery (skippable)
 //
-// All rules live in progress.js; this file only draws them. Everything here is
-// placeholder geometry: to use final art, fill in ART (per sector, per layer) later.
-//   ART.s1 = { background: "assets/s1-bg.png", pole: ..., transformer: ... }
+// The map shows one sector at a time (a button switches). Sector 1 uses the approved art (map1.js, a canvas
+// view); sectors without art yet use the placeholder SVG scene below, cropped to that sector's band.
+// All rules live in progress.js; this file only draws them.
 // ============================================================================
 const JourneyMap = (function () {
   const API = { play: null, sfx: null };            // set by the game via init()
@@ -140,8 +140,8 @@ const JourneyMap = (function () {
     return { done: (p) => Progress.isCompleteId(p.id), lit: (p) => Progress.wireLit(p), next: Progress.nextPole(), pending: null, litSectors: new Set(SECTORS().map((_, i) => i).filter((i) => Progress.wasCelebrated(i))) };
   }
   function scene(ctx) {
-    const H = totalH(), secs = SECTORS();
-    let s = `<svg class="jm-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" data-h="${H}">`;
+    const H = totalH(), secs = SECTORS(), cut = svgCut();
+    let s = `<svg class="jm-svg" viewBox="0 0 ${W} ${cut}" xmlns="http://www.w3.org/2000/svg" data-h="${cut}">`;
     s += '<defs><radialGradient id="jmhalo"><stop offset="0" stop-color="#ffe9a8" stop-opacity="0.9"/><stop offset="1" stop-color="#ffd36b" stop-opacity="0"/></radialGradient>';
     s += '<radialGradient id="jmglow"><stop offset="0" stop-color="#ffd36b" stop-opacity="0.55"/><stop offset="1" stop-color="#ffd36b" stop-opacity="0"/></radialGradient>';
     s += '<linearGradient id="jmfog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070a13" stop-opacity="0.92"/><stop offset="1" stop-color="#070a13" stop-opacity="0"/></linearGradient>';
@@ -196,7 +196,7 @@ const JourneyMap = (function () {
   @keyframes jmIn{from{opacity:0;transform:scale(1.35)}to{opacity:1;transform:scale(1)}}
   .jm.leaving .jm-col{transition:transform .28s ease-in,opacity .28s ease-in;opacity:0}
   .jm-top{position:absolute;left:0;right:0;top:0;height:calc(90px + env(safe-area-inset-top));background:linear-gradient(#070a13e0,#070a1300);pointer-events:none}
-  .jm-title{position:absolute;left:60px;right:60px;top:calc(18px + env(safe-area-inset-top));text-align:center;font-size:clamp(18px,6.2vw,28px);white-space:nowrap;font-weight:700;color:#ffe39a;background:linear-gradient(#fff8e4,#ffe39a 45%,#ffb42a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 1.2px #0b1233) drop-shadow(0 0 1.2px #0b1233) drop-shadow(0 2.5px 0 #0b1233) drop-shadow(0 0 14px rgba(255,176,46,.45));pointer-events:none;opacity:0;transition:opacity .5s}
+  .jm-title{position:absolute;left:16px;right:16px;top:calc(64px + env(safe-area-inset-top));text-align:center;font-size:clamp(18px,6.2vw,28px);white-space:nowrap;font-weight:700;color:#ffe39a;background:linear-gradient(#fff8e4,#ffe39a 45%,#ffb42a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 1.2px #0b1233) drop-shadow(0 0 1.2px #0b1233) drop-shadow(0 2.5px 0 #0b1233) drop-shadow(0 0 14px rgba(255,176,46,.45));pointer-events:none;opacity:0;transition:opacity .5s}
   .jm-title.on{opacity:1}
   .jm-close{position:absolute;top:calc(10px + env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:50%;border:2px solid #2a3558;background:#0e1424;color:#eef2fa;font-size:22px;line-height:1;z-index:3}
   .jm-actions{position:absolute;left:0;right:0;bottom:0;padding:34px 20px calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center;background:linear-gradient(#070a1300,#070a13d8 60%);pointer-events:none}
@@ -206,6 +206,13 @@ const JourneyMap = (function () {
   @keyframes jmPulse{0%,100%{box-shadow:0 0 14px rgba(255,176,46,.25)}50%{box-shadow:0 0 30px rgba(255,176,46,.6)}}
   .jm-recentre{position:absolute;right:16px;bottom:calc(96px + env(safe-area-inset-bottom));width:46px;height:46px;border-radius:50%;border:2px solid #33426b;background:#0e1424ee;display:none;align-items:center;justify-content:center;z-index:3}
   .jm-recentre.on{display:flex}
+  .jm-s1{position:absolute;inset:0;width:100%;height:100%;display:none;touch-action:none}
+  .jm.s1 .jm-scroll{display:none}
+  .jm.leaving .jm-s1{transition:opacity .25s ease-in;opacity:0}
+  .jm.enter .jm-s1{animation:jmFade .3s ease-out both}
+  @keyframes jmFade{from{opacity:0}to{opacity:1}}
+  .jm-sector{position:absolute;top:calc(10px + env(safe-area-inset-top));left:14px;height:42px;padding:0 16px;border-radius:21px;border:2px solid #2a3558;background:#0e1424e8;color:#dbe5ff;font-size:15px;z-index:3}
+  .jm-sector[hidden]{display:none}
   .jm .star{fill:#cfd8f5;opacity:.4}
   .jm .road{fill:none;stroke:#111a33;stroke-width:34;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
   .jm .scenery{transition:opacity .9s}
@@ -270,7 +277,41 @@ const JourneyMap = (function () {
   @media (prefers-reduced-motion:reduce){.jm .pole.current .halo,.jm .mat .matglow,.jm-continue{animation:none}.jm.enter .jm-col{animation:none}}
   `;
 
-  let root = null, scrollEl = null, mode = "map", cb = {}, anim = null, view = { ctxFn: normalCtx };
+  let root = null, scrollEl = null, mode = "map", cb = {}, anim = null, view = { ctxFn: normalCtx }, curSector = 0;
+  // ---- Sector 1: the approved art (map1.js) ---------------------------------------------------------------
+  const hasS1 = () => typeof Sector1Map !== "undefined" && Sector1Map.ready();
+  // the art is still downloading (e.g. the map opens right at launch): show the sector blank, then retry once it is in;
+  // only a failed download falls back to the placeholder scene
+  let s1Wait = 0;
+  function waitS1(retry) {
+    if (typeof Sector1Map === "undefined" || Sector1Map.ready() || Sector1Map.failed()) return false;
+    root.classList.add("s1"); const tok = ++s1Wait;
+    Sector1Map.load().then(() => { if (tok === s1Wait && isOpen()) retry(); });
+    return true;
+  }
+  const s1On = () => !!root && root.classList.contains("s1");
+  const s1Poles = () => Progress.ROUTE.filter((p) => p.sector === 0);
+  const s1State = (p) => ({ done: Progress.isCompleteId(p.id), lit: Progress.wireLit(p), current: Progress.nextPole() === p });
+  function openS1(focus, state) {
+    root.classList.add("s1");
+    Sector1Map.open(root, {
+      poles: s1Poles(), state: state || s1State, focus: focus && focus.sector === 0 ? focus : s1Poles()[0],
+      onPlay: (p) => { cancelAnim(); root.classList.add("leaving"); setTimeout(() => { hide(); if (API.play) API.play(p.index); }, reducedMotion() ? 0 : 260); },
+      onSkip: () => { if (anim && anim.skip) anim.skip(); },
+      onFrame: () => { const r = $(".jm-recentre"), on = mode === "map" && Sector1Map.offFocus(view.focus); if (r.classList.contains("on") !== on) r.classList.toggle("on", on); },
+    });
+  }
+  // on the art the current marker carries its own Play tag (and pole 1 sits low enough for the bar to hide it), so the
+  // Continue bar only appears when the next level is not on this map (e.g. after the finale, Sector 2 is next)
+  function s1Actions() { const nx = Progress.nextPole(); setContinue(nextLabel(), !(nx && nx.sector === 0)); }
+  const reducedMotion = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function sectorButton(show) { // switch between sectors; hidden while an animation runs
+    const b = $(".jm-sector"), n = SECTORS().length;
+    b.hidden = !show || n < 2;
+    b.textContent = curSector === 0 ? `Sector ${curSector + 2} ›` : `‹ Sector ${curSector}`;
+  }
+  // the SVG scene for a sector other than 1 is cropped at the bottom of that sector's band
+  const svgCut = () => (curSector > 0 ? Math.min(totalH(), bandBottom(curSector) + 150) : totalH());
   const $ = (q) => root.querySelector(q);
   const k = () => $(".jm-col").offsetWidth / W;   // layout width: unaffected by the entry/leave transforms
   const viewH = () => scrollEl.clientHeight;
@@ -279,12 +320,13 @@ const JourneyMap = (function () {
     if (root) return;
     const st = document.createElement("style"); st.id = "jm-style"; st.textContent = CSS; document.head.appendChild(st);
     root = document.createElement("div"); root.className = "jm hidden"; root.id = "jm";
-    root.innerHTML = '<div class="jm-scroll"><div class="jm-col"></div></div><div class="jm-top"></div><div class="jm-title"></div><button class="jm-close" aria-label="Close">×</button><button class="jm-recentre" aria-label="Back to the current level"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2fa" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button><div class="jm-actions"><button class="jm-continue">Continue</button></div>';
+    root.innerHTML = '<div class="jm-scroll"><div class="jm-col"></div></div><div class="jm-top"></div><div class="jm-title"></div><button class="jm-sector" hidden></button><button class="jm-close" aria-label="Close">×</button><button class="jm-recentre" aria-label="Back to the current level"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2fa" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button><div class="jm-actions"><button class="jm-continue">Continue</button></div>';
     document.body.appendChild(root);
     scrollEl = $(".jm-scroll");
     $(".jm-close").addEventListener("click", () => hide());
     $(".jm-continue").addEventListener("click", () => { if (cb.continue) cb.continue(); });
-    $(".jm-recentre").addEventListener("click", () => { if (view.focus) smoothScroll(scrollFor(view.focus), 450); });
+    $(".jm-recentre").addEventListener("click", () => { if (!view.focus) return; if (s1On()) Sector1Map.focus(view.focus); else smoothScroll(scrollFor(view.focus), 450); });
+    $(".jm-sector").addEventListener("click", () => { if (anim) return; showMap({ closable: cb.closable, sector: curSector === 0 ? 1 : 0 }); });
     scrollEl.addEventListener("scroll", updateRecentre, { passive: true });
     // tap: poles. Taps on empty scenery during an animation skip it.
     let moved = false, downY = 0, downScroll = 0, mouseDrag = false;
@@ -304,7 +346,7 @@ const JourneyMap = (function () {
     window.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && isOpen() && cb.closable) hide(); });
   }
   const isOpen = () => !!root && !root.classList.contains("hidden");
-  function hide() { if (!root) return; cancelAnim(); root.classList.add("hidden"); root.classList.remove("leaving", "enter"); }
+  function hide() { if (!root) return; cancelAnim(); if (typeof Sector1Map !== "undefined") Sector1Map.close(); root.classList.add("hidden"); root.classList.remove("leaving", "enter", "s1"); }
   function cancelAnim() { if (anim && anim.cancel) anim.cancel(); anim = null; }
 
   // zoom into a pole, then start its level
@@ -348,9 +390,10 @@ const JourneyMap = (function () {
   const goNext = () => { hide(); const n = Progress.nextIndex(); if (API.play) API.play(n === null ? 0 : n); };
 
   function open(m) {
-    ensure(); cancelAnim(); mode = m; root.classList.remove("hidden", "leaving"); $(".jm-col").style.transform = "";
+    ensure(); cancelAnim(); s1Wait++; mode = m; root.classList.remove("hidden", "leaving"); $(".jm-col").style.transform = "";
     root.classList.remove("enter"); void root.offsetWidth; root.classList.add("enter");
     const t = $(".jm-title"); t.classList.remove("on"); t.textContent = "";
+    if (typeof Sector1Map !== "undefined") Sector1Map.close(); root.classList.remove("s1"); $(".jm-recentre").classList.remove("on");
   }
 
   // ---- the map (launch / HUD house button) -------------------------------------------------------------------
@@ -358,11 +401,18 @@ const JourneyMap = (function () {
     opts = opts || {}; ensure(); computePositions(); computeProps();
     cb = { closable: !!opts.closable, continue: goNext };
     open("map");
-    render(normalCtx());
-    const focus = Progress.nextPole() || Progress.CHAIN[Progress.CHAIN.length - 1];
+    let focus = Progress.nextPole() || Progress.CHAIN[Progress.CHAIN.length - 1];
+    curSector = opts.sector !== undefined ? opts.sector : focus.sector;
+    if (focus.sector !== curSector) { // viewing another sector: its next pole, else its last completed one, else its first
+      const ps = Progress.ROUTE.filter((p) => p.sector === curSector && p.built);
+      focus = ps.filter((p) => Progress.isCompleteId(p.id)).pop() || ps[0] || focus;
+    }
     view = { focus };
     $(".jm-close").style.display = cb.closable ? "" : "none";
-    setContinue(nextLabel(), true);
+    setContinue(nextLabel(), true); sectorButton(true);
+    if (curSector === 0 && waitS1(() => showMap(opts))) return;
+    if (curSector === 0 && hasS1()) { openS1(focus); s1Actions(); return; }
+    render(normalCtx());
     scrollEl.scrollTop = scrollFor(focus);
     updateRecentre();
   }
@@ -385,13 +435,14 @@ const JourneyMap = (function () {
     ensure(); computePositions(); computeProps();
     cb = { closable: false, continue: goNext };
     const seq = beat.replay ? [] : beatPoles(beat);
-    if (!seq.length) { // nothing new connected: show the map, no animation
-      open("map"); render(normalCtx()); view = { focus: Progress.nextPole() || Progress.CHAIN[Progress.CHAIN.length - 1] };
-      $(".jm-close").style.display = "none"; setContinue(nextLabel(), true);
-      scrollEl.scrollTop = scrollFor(view.focus); updateRecentre(); return;
+    if (!seq.length) { // nothing new connected (a replay): show the map as it is, no animation
+      showMap({ closable: false }); cb.continue = goNext; return;
     }
     open("beat");
     const finale = beat.finale >= 0 ? beat.finale : -1;
+    if (seq[0].sector === 0 && waitS1(() => showBeat(beat))) return;
+    if (seq[0].sector === 0 && hasS1()) { s1Beat(seq.filter((p) => p.sector === 0), finale === 0); return; }
+    curSector = seq[0].sector; sectorButton(false);
     const inSeq = (p) => p.chain >= seq[0].chain && p.chain <= seq[seq.length - 1].chain;
     // pre-state: everything as it was; the poles about to light wait in the dark, their wires dark
     const pre = {
@@ -406,6 +457,27 @@ const JourneyMap = (function () {
     const a = prev ? POS[prev.pos - 1].y : START().y, b = POS[seq[0].pos - 1].y;
     scrollEl.scrollTop = scrollForY((a + b) / 2 - 20, 0.5);
     runBeat(seq, finale);
+  }
+
+  // Sector 1: the cable runs to the new pole, then its compound lights (tap to skip). The tenth level also plays the
+  // sector finale, then "Sector complete"; Continue goes on to the next level either way.
+  function s1Beat(seq, isFinale, previewState) {
+    curSector = 0;
+    if (isFinale && !previewState) Progress.markCelebrated(0);
+    const next = Progress.nextPole();
+    view = { focus: previewState ? seq[seq.length - 1] : (next && next.sector === 0 ? next : seq[seq.length - 1]) };
+    $(".jm-close").style.display = previewState ? "" : "none"; setContinue("Continue", false); sectorButton(false); // tap anywhere skips
+    openS1(seq[0], previewState);
+    const settle = () => {
+      anim = null; mode = "map";
+      if (isFinale) { const t = $(".jm-title"); t.textContent = "Sector complete"; t.classList.add("on"); }
+      if (previewState) setContinue("Continue", true); else s1Actions();
+      sectorButton(true);
+    };
+    anim = { cancel() { Sector1Map.skip(); }, skip() { Sector1Map.skip(); } };
+    cb.continue = previewState ? () => { if (anim) Sector1Map.skip(); else hide(); }
+      : () => { if (!anim) { goNext(); return; } if (isFinale) Sector1Map.skip(); else { anim = null; Sector1Map.skip(); goNext(); } };
+    Sector1Map.beat(seq, { finale: isFinale, next: view.focus !== seq[seq.length - 1] ? view.focus : null, sfx: (kind) => { if (API.sfx) API.sfx(kind); }, onDone: settle });
   }
 
   function runBeat(seq, finale) {
@@ -468,7 +540,7 @@ const JourneyMap = (function () {
       scrollEl.scrollTop = scrollFor(view.focus);
       mode = "map"; updateRecentre();
       if (finale >= 0) { const t = $(".jm-title"); t.textContent = "Sector complete"; t.classList.add("on"); }
-      setContinue(nextLabel(), true);
+      setContinue(nextLabel(), true); sectorButton(true);
       if (go) goNext();
     }
     // Continue: an ordinary connection goes straight on; a finale first settles (second press continues)
@@ -513,6 +585,11 @@ const JourneyMap = (function () {
     if (!pole || !pole.built) return false;
     cb = { closable: true, continue: () => hide() };
     open("beat");
+    if (si === 0 && hasS1()) { // everything before the transformer shown done; saved progress is not touched
+      s1Beat([pole], true, (p) => (p.slot < 10 || !Sector1Map.busy() ? { done: true, lit: true, current: false } : { done: false, lit: false, current: false }));
+      return true;
+    }
+    curSector = si; sectorButton(false);
     const pre = { done: (p) => p.chain < pole.chain, lit: (p) => p.chain < pole.chain, next: null, pending: pole, litSectors: new Set(SECTORS().map((_, i) => i).filter((i) => i < si)) };
     render(pre);
     view = { focus: pole }; $(".jm-close").style.display = ""; setContinue("Continue", true);
@@ -522,6 +599,6 @@ const JourneyMap = (function () {
     return true;
   }
 
-  function init(opts) { Object.assign(API, opts || {}); }
+  function init(opts) { Object.assign(API, opts || {}); if (typeof Sector1Map !== "undefined") Sector1Map.load(); }
   return { init, showMap, showBeat, previewFinale, hide, isOpen, ART };
 })();
